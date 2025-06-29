@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-    <title>Page Assistant</title>
+    <title>InsightLens</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -15,7 +16,7 @@
             --text-light: #666;
             --border-color: #e0e0e0;
         }
-        
+
         body {
             width: 280px;
             padding: 20px 30px;
@@ -107,7 +108,7 @@
             font-weight: 500;
             color: var(--text-color);
         }
-        
+
         .status-text-secondary {
             grid-column: 2;
         }
@@ -133,33 +134,35 @@
         }
     </style>
 </head>
+
 <body>
     <div class="header">
         <div class="logo"><i class="fas fa-comments"></i></div>
-        <h2>Page Assistant</h2>
+        <h2>InsightLens</h2>
         <a href="#" id="openOptions" class="settings-btn" title="Settings">
             <i class="fas fa-cog"></i>
         </a>
     </div>
-    
+
     <a href="#" id="activateAssistant" class="button">
         <span class="button-icon"><i class="fas fa-search"></i></span>
         Analyze Current Page
     </a>
-    
+
     <div class="status-container">
         <div id="status" class="status">
             <span class="status-icon"><i class="fas fa-spinner fa-spin"></i></span>
             Loading settings...
         </div>
     </div>
-    
+
     <div class="divider"></div>
-    
+
     <div class="footer">
-        Your Web Companion • v1.1.0
+        InsightLens • v1.1.0
     </div>
 
     <script src="popup.js"></script>
 </body>
+
 </html>

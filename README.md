@@ -1,4 +1,4 @@
-# Page Assistant Chrome Extension
+# InsightLens Chrome Extension
 
 A professional AI-powered chatbot that helps you understand any webpage with summaries, key insights, and a specialized LinkedIn comment generation feature.
 
@@ -11,7 +11,7 @@ A professional AI-powered chatbot that helps you understand any webpage with sum
 
 ## Features
 
-The Page Assistant extension provides a suite of AI-powered tools to enhance your browsing experience:
+The InsightLens extension provides a suite of AI-powered tools to enhance your browsing experience:
 
 1.  **Webpage Summarization:**
     *   Get concise, bullet-point summaries of any webpage content.
@@ -55,7 +55,7 @@ The extension operates through a combination of a background service worker, con
 
 ## Setup and Configuration
 
-To use the Page Assistant extension, you need to configure your AI provider and API key:
+To use the InsightLens extension, you need to configure your AI provider and API key:
 
 1.  Right-click the extension icon in your browser toolbar and select "Options".
 2.  On the options page, choose your preferred AI provider (OpenAI or Gemini).
