@@ -15,7 +15,7 @@
   "background": {
     "service_worker": "background.js"
   },
-  "options_page": "options.html",
+  "options_page": "settings/options.html",
   "action": {
     "default_title": "Page Assistant",
     "default_popup": "popup.html",
@@ -25,9 +25,26 @@
   },
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
-      "css": ["styles.css"],
-      "js": ["content.js"]
+      "matches": [
+        "<all_urls>"
+      ],
+      "css": [
+        "styles.css"
+      ],
+      "js": [
+        "content.js"
+      ]
+    },
+    {
+      "matches": [
+        "*://*.linkedin.com/*"
+      ],
+      "css": [
+        "linkedin feature/style.css"
+      ],
+      "js": [
+        "linkedin feature/content.js"
+      ]
     }
   ],
   "icons": {
@@ -38,8 +55,12 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["styles.css"],
-      "matches": ["<all_urls>"]
+      "resources": [
+        "styles.css"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
     }
   ]
 }

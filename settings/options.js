@@ -9,6 +9,8 @@ Format the response as clear, easy-to-read bullet points.`;
 const apiKeyInput = document.getElementById('apiKey');
 const modelInput = document.getElementById('model');
 const systemPromptTextarea = document.getElementById('systemPrompt');
+const userProfileInfoTextarea = document.getElementById('userProfileInfo');
+const userProfileFileInput = document.getElementById('userProfileFile');
 const saveButton = document.getElementById('save');
 const resetButton = document.getElementById('reset');
 const statusDiv = document.getElementById('status');
@@ -31,7 +33,8 @@ function loadSettings() {
             openaiApiKey: '',
             geminiApiKey: '',
             model: 'gpt-3.5-turbo',
-            systemPrompt: ''
+            systemPrompt: '',
+            userProfileInfo: ''
         },
         (items) => {
             providerSelect.value = items.provider;
@@ -39,6 +42,7 @@ function loadSettings() {
             geminiApiKeyInput.value = items.geminiApiKey;
             modelInput.value = items.model;
             systemPromptTextarea.value = items.systemPrompt;
+            userProfileInfoTextarea.value = items.userProfileInfo;
             updateProviderUI(items.provider);
             updateModelOptionSelection(items.model);
         }
@@ -64,6 +68,7 @@ function saveSettings() {
     const geminiApiKey = geminiApiKeyInput.value.trim();
     const model = modelInput.value.trim();
     const systemPrompt = systemPromptTextarea.value.trim();
+    const userProfileInfo = userProfileInfoTextarea.value.trim();
 
     if (provider === 'openai' && openaiApiKey && !openaiApiKey.startsWith('sk-')) {
         showStatus('Error: Invalid OpenAI API key format. It should start with "sk-"', 'error');
@@ -83,7 +88,8 @@ function saveSettings() {
             openaiApiKey: openaiApiKey,
             geminiApiKey: geminiApiKey,
             model: model,
-            systemPrompt: systemPrompt
+            systemPrompt: systemPrompt,
+            userProfileInfo: userProfileInfo
         },
         () => {
             if (chrome.runtime.lastError) {
@@ -102,6 +108,7 @@ function resetSettings() {
     geminiApiKeyInput.value = '';
     modelInput.value = 'gpt-3.5-turbo';
     systemPromptTextarea.value = '';
+    userProfileInfoTextarea.value = '';
     updateProviderUI('openai');
     updateModelOptionSelection('gpt-3.5-turbo');
     showStatus('Settings reset to defaults. Click Save to apply changes.', 'success');
@@ -120,9 +127,32 @@ function showStatus(message, type) {
 }
 
 // Event Listeners
-document.addEventListener('DOMContentLoaded', loadSettings);
+document.addEventListener('DOMContentLoaded', () => {
+    loadSettings();
+
+    const tabLinks = document.querySelectorAll('.tab-link');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    tabLinks.forEach(link => {
+        link.addEventListener('click', () => {
+            const tab = link.dataset.tab;
+
+            tabLinks.forEach(l => l.classList.remove('active'));
+            link.classList.add('active');
+
+            tabContents.forEach(content => {
+                if (content.id === tab) {
+                    content.classList.add('active');
+                } else {
+                    content.classList.remove('active');
+                }
+            });
+        });
+    });
+});
 saveButton.addEventListener('click', saveSettings);
 resetButton.addEventListener('click', resetSettings);
+userProfileFileInput.addEventListener('change', handleFileSelect);
 
 // Handle model option selection
 Array.from(document.querySelectorAll('.model-option')).forEach(option => {
@@ -153,6 +183,30 @@ function updateProviderUI(provider) {
     }
 }
 
-providerSelect.addEventListener('change', function() {
+providerSelect.addEventListener('change', function () {
     updateProviderUI(this.value);
 });
+
+// Handle file upload for personalization
+function handleFileSelect(event) {
+    const file = event.target.files[0];
+    if (!file) {
+        return;
+    }
+    // Allow both .txt and .md files. Note: MIME type for .md can be inconsistent.
+    // A simple check for file extension is more reliable here.
+    if (!file.name.endsWith('.txt') && !file.name.endsWith('.md')) {
+        showStatus('Error: Please upload a .txt or .md file.', 'error');
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function (e) {
+        userProfileInfoTextarea.value = e.target.result;
+        showStatus(`Successfully loaded ${file.name}. Click Save to apply changes.`, 'success');
+    };
+    reader.onerror = function () {
+        showStatus(`Error reading file: ${reader.error}`, 'error');
+    };
+    reader.readAsText(file);
+}
