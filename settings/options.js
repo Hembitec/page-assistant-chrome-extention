@@ -24,15 +24,41 @@ const modelHintOpenAI = document.getElementById('modelHintOpenAI');
 const modelHintGemini = document.getElementById('modelHintGemini');
 const openaiApiGroup = document.getElementById('openai-api-group');
 const geminiApiGroup = document.getElementById('gemini-api-group');
+const pageAssistantApiGroup = document.getElementById('page-assistant-api-group');
+
+// Auth Modal Elements
+const authModal = document.getElementById('auth-modal');
+const loginBtn = document.getElementById('login-btn');
+const closeModalBtn = document.querySelector('.close-button');
+const showRegisterLink = document.getElementById('show-register');
+const showLoginLink = document.getElementById('show-login');
+const loginView = document.getElementById('login-view');
+const registerView = document.getElementById('register-view');
+const submitLoginBtn = document.getElementById('submit-login');
+const submitRegisterBtn = document.getElementById('submit-register');
+const logoutBtn = document.getElementById('logout-btn');
+const authStatusDiv = document.getElementById('auth-status');
+
+// API URL
+const API_BASE_URL = 'https://insightlens.42web.io/wp-json/hmb-page-assistant/v1';
 
 // Load saved settings
 function loadSettings() {
+    chrome.storage.local.get(['jwtToken', 'userEmail'], (localData) => {
+        if (localData.jwtToken) {
+            updateAuthUI(true, localData.userEmail);
+            fetchTokenBalance(localData.jwtToken);
+        } else {
+            updateAuthUI(false);
+        }
+    });
+
     chrome.storage.sync.get(
         {
-            provider: 'openai',
+            provider: 'page_assistant_api',
             openaiApiKey: '',
             geminiApiKey: '',
-            model: 'gpt-3.5-turbo',
+            model: 'gemini-2.5-flash',
             systemPrompt: '',
             userProfileInfo: ''
         },
@@ -70,18 +96,19 @@ function saveSettings() {
     const systemPrompt = systemPromptTextarea.value.trim();
     const userProfileInfo = userProfileInfoTextarea.value.trim();
 
-    if (provider === 'openai' && openaiApiKey && !openaiApiKey.startsWith('sk-')) {
-        showStatus('Error: Invalid OpenAI API key format. It should start with "sk-"', 'error');
+    if (provider === 'openai' && !openaiApiKey) {
+        showStatus('Error: OpenAI API key is required.', 'error');
         return;
     }
-    if (provider === 'gemini' && geminiApiKey && geminiApiKey.length < 10) {
-        showStatus('Error: Invalid Gemini API key format.', 'error');
+    if (provider === 'gemini' && !geminiApiKey) {
+        showStatus('Error: Gemini API key is required.', 'error');
         return;
     }
-    if (!model) {
+    if (provider !== 'page_assistant_api' && !model) {
         showStatus('Error: Model name cannot be empty', 'error');
         return;
     }
+
     chrome.storage.sync.set(
         {
             provider: provider,
@@ -180,28 +207,146 @@ Array.from(document.querySelectorAll('.model-option')).forEach(option => {
 });
 
 function updateProviderUI(provider) {
+    openaiApiGroup.style.display = 'none';
+    geminiApiGroup.style.display = 'none';
+    pageAssistantApiGroup.style.display = 'none';
+    modelInput.parentElement.style.display = 'block';
+
     if (provider === 'openai') {
-        openaiApiGroup.style.display = '';
-        geminiApiGroup.style.display = 'none';
-        modelOptionsOpenAI.style.display = '';
+        openaiApiGroup.style.display = 'block';
+        modelOptionsOpenAI.style.display = 'flex';
         modelOptionsGemini.style.display = 'none';
-        modelHintOpenAI.style.display = '';
+        modelHintOpenAI.style.display = 'block';
         modelHintGemini.style.display = 'none';
         modelInput.placeholder = 'gpt-3.5-turbo';
-    } else {
-        openaiApiGroup.style.display = 'none';
-        geminiApiGroup.style.display = '';
+    } else if (provider === 'gemini') {
+        geminiApiGroup.style.display = 'block';
         modelOptionsOpenAI.style.display = 'none';
-        modelOptionsGemini.style.display = '';
+        modelOptionsGemini.style.display = 'flex';
         modelHintOpenAI.style.display = 'none';
-        modelHintGemini.style.display = '';
-        modelInput.placeholder = 'gemini-2.0-flash';
+        modelHintGemini.style.display = 'block';
+        modelInput.placeholder = 'gemini-pro';
+    } else if (provider === 'page_assistant_api') {
+        pageAssistantApiGroup.style.display = 'block';
+        modelInput.parentElement.style.display = 'none'; // Hide model selection
     }
 }
 
 providerSelect.addEventListener('change', function () {
     updateProviderUI(this.value);
 });
+
+// --- Auth Modal Logic ---
+loginBtn.addEventListener('click', () => authModal.style.display = 'flex');
+closeModalBtn.addEventListener('click', () => authModal.style.display = 'none');
+showRegisterLink.addEventListener('click', (e) => {
+    e.preventDefault();
+    loginView.style.display = 'none';
+    registerView.style.display = 'block';
+});
+showLoginLink.addEventListener('click', (e) => {
+    e.preventDefault();
+    registerView.style.display = 'none';
+    loginView.style.display = 'block';
+});
+window.addEventListener('click', (e) => {
+    if (e.target === authModal) {
+        authModal.style.display = 'none';
+    }
+});
+
+// --- Authentication Functions ---
+submitRegisterBtn.addEventListener('click', async () => {
+    const username = document.getElementById('register-username').value;
+    const email = document.getElementById('register-email').value;
+    const pass = document.getElementById('register-password').value;
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, email, password: pass })
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || 'Registration failed.');
+
+        showAuthStatus('Registration successful! Please log in.', 'success');
+        showLoginLink.click();
+    } catch (error) {
+        showAuthStatus(error.message, 'error');
+    }
+});
+
+submitLoginBtn.addEventListener('click', async () => {
+    const username = document.getElementById('login-username').value;
+    const pass = document.getElementById('login-password').value;
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/token`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password: pass })
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || 'Login failed.');
+
+        chrome.storage.local.set({ jwtToken: data.token, userEmail: data.user_email }, () => {
+            updateAuthUI(true, data.user_email);
+            fetchTokenBalance(data.token);
+            authModal.style.display = 'none';
+            showStatus('Logged in successfully!', 'success');
+        });
+    } catch (error) {
+        showAuthStatus(error.message, 'error');
+    }
+});
+
+logoutBtn.addEventListener('click', () => {
+    chrome.storage.local.remove(['jwtToken', 'userEmail'], () => {
+        updateAuthUI(false);
+        showStatus('Logged out successfully.', 'success');
+    });
+});
+
+function updateAuthUI(isLoggedIn, email = '') {
+    const loggedInView = document.getElementById('auth-logged-in');
+    const loggedOutView = document.getElementById('auth-logged-out');
+    if (isLoggedIn) {
+        loggedInView.style.display = 'block';
+        loggedOutView.style.display = 'none';
+        document.getElementById('user-email').textContent = email;
+    } else {
+        loggedInView.style.display = 'none';
+        loggedOutView.style.display = 'block';
+        document.getElementById('user-email').textContent = '';
+        document.getElementById('token-balance').textContent = 'N/A';
+    }
+}
+
+async function fetchTokenBalance(token) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/balance`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || 'Could not fetch balance.');
+
+        document.getElementById('token-balance').textContent = data.balance;
+    } catch (error) {
+        console.error('Error fetching token balance:', error);
+        document.getElementById('token-balance').textContent = 'Error';
+    }
+}
+
+function showAuthStatus(message, type) {
+    authStatusDiv.textContent = message;
+    authStatusDiv.style.color = type === 'error' ? 'red' : 'green';
+}
+
 
 // Handle file upload for personalization
 function handleFileSelect(event) {

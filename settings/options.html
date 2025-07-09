@@ -24,6 +24,7 @@
                 <div class="form-group">
                     <label for="provider">AI Provider</label>
                     <select id="provider">
+                        <option value="page_assistant_api">Page Assistant API</option>
                         <option value="openai">OpenAI</option>
                         <option value="gemini">Gemini</option>
                     </select>
@@ -86,6 +87,39 @@
                     <div class="hint" id="modelHintGemini" style="display:none;">Select a model or enter a custom Gemini
                         model
                         name.</div>
+                </div>
+                <div class="form-group" id="page-assistant-api-group" style="display:none;">
+                    <label>Account</label>
+                    <div id="auth-logged-out">
+                        <p>Log in or create an account to use the Page Assistant API.</p>
+                        <button id="login-btn">Login / Sign Up</button>
+                    </div>
+                    <div id="auth-logged-in" style="display:none;">
+                        <p>Logged in as: <strong id="user-email"></strong></p>
+                        <p>Remaining Tokens: <strong id="token-balance"></strong></p>
+                        <button id="logout-btn" class="secondary">Logout</button>
+                    </div>
+                </div>
+                <div id="auth-modal" class="modal" style="display:none;">
+                    <div class="modal-content">
+                        <span class="close-button">&times;</span>
+                        <div id="login-view">
+                            <h2>Login</h2>
+                            <input type="text" id="login-username" placeholder="Username or Email">
+                            <input type="password" id="login-password" placeholder="Password">
+                            <button id="submit-login">Login</button>
+                            <p>Don't have an account? <a href="#" id="show-register">Sign Up</a></p>
+                        </div>
+                        <div id="register-view" style="display:none;">
+                            <h2>Sign Up</h2>
+                            <input type="text" id="register-username" placeholder="Username">
+                            <input type="email" id="register-email" placeholder="Email">
+                            <input type="password" id="register-password" placeholder="Password">
+                            <button id="submit-register">Sign Up</button>
+                            <p>Already have an account? <a href="#" id="show-login">Login</a></p>
+                        </div>
+                        <div id="auth-status"></div>
+                    </div>
                 </div>
             </div>
             <div class="tab-content" id="personalization">

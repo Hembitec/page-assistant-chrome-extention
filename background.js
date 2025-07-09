@@ -1,8 +1,7 @@
-// OpenAI API endpoint
+// API endpoints
 const OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions';
-
-// Gemini API endpoint base
 const GEMINI_API_URL_BASE = 'https://generativelanguage.googleapis.com/v1beta/models/';
+const PAGE_ASSISTANT_API_URL = 'https://insightlens.42web.io/wp-json/hmb-page-assistant/v1';
 
 // System prompts for different actions
 const SYSTEM_PROMPTS = {
@@ -30,7 +29,31 @@ Always use simple words so it will be easy for any one to understand.
 The comment should add value to the discussion. It can be a thoughtful question, a supplementary insight, or an appreciative remark.
 Always know that not all post comment need question and the ones that requires it the questionstion should be a unique and conversation stater ones.
 Keep the tone positive. Do not include hashtags and emojis unless the emoji is highly relevant.
-The generated comment should be concise and ready to be posted directly.`,
+The generated comment should be concise and ready to be posted directly.
+ADDITIONAL RULES FOR COMMENT QUALITY
+Avoid generic LinkedIn phrases and clichés. Make each line sound natural, specific, and personal.
+When appropriate, include a personal reaction or small observation.
+Ask questions only when they open a new dimension or insight — avoid yes/no or surface-level questions.
+Keep the tone curious, warm, smart, and concise.
+Comments should be 1 sentence and 2 short sentences if it is a post that required adding unique insight or points to post and center around a single idea.
+Vary sentence structure to make the comment feel human-written.
+
+Focus on One Clear Idea
+Each comment should express only one central thought — a reaction, question, or micro-insight.
+Avoid trying to say too much or cover multiple angles.
+
+Vary Comment Type (Don’t Force a Question)
+Not all comments need a question or conversation starter.
+Only ask a question if it opens a deeper layer of the post’s message.
+Skip questions when a supportive statement, subtle insight, or warm reaction is enough.
+
+Use Tone That Matches the Post
+The tone should adapt based on the post type:
+Professional posts → clear, sharp, respectful
+Personal posts → warm, thoughtful, validating
+Thought-leadership posts → insightful, curious, sometimes challenging
+Avoid being overly chatty or robotic — keep the tone flexible, human, and context-aware.
+`,
 
     'generate_linkedin_comment_generic': `You are a professional social media manager helping a user write a comment on a LinkedIn post.
 Based on the post content provided, generate a professional, insightful, conversational starter and engaging comment based on
@@ -39,7 +62,35 @@ Always use simple words so it will be easy for any one to understand.
 The comment should add value to the discussion. It can be a thoughtful question, a supplementary insight, or an appreciative remark.
 Always know that not all post comment need question and the ones that requires it the questionstion should be a unique and conversation stater ones.
 Keep the tone positive. Do not include hashtags and emojis unless the emoji is highly relevant.
-The generated comment should be concise and ready to be posted directly.`
+The generated comment should be concise and ready to be posted directly.
+
+ADDITIONAL RULES FOR COMMENT QUALITY
+Avoid generic LinkedIn phrases and clichés. Make each line sound natural, specific, and personal.
+When appropriate, include a personal reaction or small observation.
+Ask questions only when they open a new dimension or insight — avoid yes/no or surface-level questions.
+Keep the tone curious, warm, smart, and concise.
+Comments should be 1 sentenct or 2 short sentences if needed to prove a point and center around a single idea.
+Vary sentence structure to make the comment feel human-written.
+
+Focus on One Clear Idea
+Each comment should express only one central thought — a reaction, question, or micro-insight.
+Avoid trying to say too much or cover multiple angles.
+
+Vary Comment Type (Don’t Force a Question)
+Not all comments need a question or conversation starter.
+Only ask a question if it opens a deeper layer of the post’s message.
+Skip questions when a supportive statement, subtle insight, or warm reaction is enough.
+
+Use Tone That Matches the Post
+The tone should adapt based on the post type:
+
+Professional posts → clear, sharp, respectful
+
+Personal posts → warm, thoughtful, validating
+
+Thought-leadership posts → insightful, curious, sometimes challenging
+Avoid being overly chatty or robotic — keep the tone flexible, human, and context-aware.
+`
 };
 
 // Handle messages from content script
@@ -75,21 +126,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 // Process standard requests (summary, key takeaway)
 async function processRequest(request, systemPrompt, sendResponse) {
     try {
-        let finalSystemPrompt = systemPrompt;
-
-        // If the action is for LinkedIn, decide which prompt to use
-        if (request.action === 'generate_linkedin_comment') {
-            const settings = await getSettings();
-            if (settings.userProfileInfo) {
-                finalSystemPrompt = SYSTEM_PROMPTS['generate_linkedin_comment'];
-            } else {
-                finalSystemPrompt = SYSTEM_PROMPTS['generate_linkedin_comment_generic'];
-            }
-        }
-
         const result = await makeAIRequest({
+            action: request.action,
             content: request.content,
-            systemPrompt: finalSystemPrompt,
+            systemPrompt: systemPrompt,
             history: request.history || []
         });
         sendResponse({ success: true, result });
@@ -105,6 +145,7 @@ async function processChatRequest(request, sendResponse) {
         // For chat, we include the user's message in the messages array
         const history = request.history || [];
         const result = await makeAIRequest({
+            action: request.action,
             content: request.content,
             systemPrompt: SYSTEM_PROMPTS.chat,
             history,
@@ -119,10 +160,10 @@ async function processChatRequest(request, sendResponse) {
 
 // Get settings from storage
 async function getSettings() {
-    return new Promise((resolve) => {
+    const syncPromise = new Promise((resolve) => {
         chrome.storage.sync.get(
             {
-                provider: 'openai',
+                provider: 'page_assistant_api',
                 openaiApiKey: '',
                 geminiApiKey: '',
                 model: 'gpt-3.5-turbo',
@@ -132,78 +173,108 @@ async function getSettings() {
             (items) => resolve(items)
         );
     });
+
+    const localPromise = new Promise((resolve) => {
+        chrome.storage.local.get({ jwtToken: null }, (items) => resolve(items));
+    });
+
+    const [syncSettings, localSettings] = await Promise.all([syncPromise, localPromise]);
+    return { ...syncSettings, ...localSettings };
 }
 
 // Main AI request dispatcher
-async function makeAIRequest({ content, systemPrompt, history = [], userMessage = null }) {
+async function makeAIRequest({ content, systemPrompt, history = [], userMessage = null, action }) {
     const settings = await getSettings();
-    if (settings.provider === 'openai') {
+
+    // 1. Determine the final system prompt, especially for LinkedIn comments
+    let finalSystemPrompt = systemPrompt;
+    if (action === 'generate_linkedin_comment') {
+        if (settings.userProfileInfo) {
+            finalSystemPrompt = SYSTEM_PROMPTS['generate_linkedin_comment'];
+        } else {
+            finalSystemPrompt = SYSTEM_PROMPTS['generate_linkedin_comment_generic'];
+        }
+    }
+
+    // 2. Dispatch based on the selected provider
+    if (settings.provider === 'page_assistant_api') {
+        if (!settings.jwtToken) {
+            throw new Error('You are not logged in. Please log in from the extension settings.');
+        }
+
+        const url = `${PAGE_ASSISTANT_API_URL}/process`;
+        const body = {
+            action,
+            content,
+            user_profile: settings.userProfileInfo || null,
+            history: history || [],
+            message: userMessage || ''
+        };
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${settings.jwtToken}`
+            },
+            body: JSON.stringify(body)
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.message || `An error occurred with the Page Assistant API at ${url}.`);
+        }
+        return data.result;
+
+    } else if (settings.provider === 'openai') {
         if (!settings.openaiApiKey) {
             throw new Error('OpenAI API key not configured. Please set it in the extension options.');
         }
 
         let finalContent = content;
-        // Check if this is a LinkedIn comment generation and if user profile info exists
-        if (systemPrompt === SYSTEM_PROMPTS['generate_linkedin_comment'] && settings.userProfileInfo) {
+        // Special content formatting for persona-based LinkedIn comments
+        if (action === 'generate_linkedin_comment' && settings.userProfileInfo) {
             finalContent = `USER PROFILE:\n${settings.userProfileInfo}\n\nPOST CONTENT:\n${content}`;
         }
 
-        // Construct messages array
         const messages = [
-            { role: 'system', content: systemPrompt || settings.systemPrompt },
+            { role: 'system', content: finalSystemPrompt },
             ...history,
             { role: 'user', content: userMessage ? userMessage : finalContent }
         ];
         return makeOpenAIRequestWithMessages(messages, settings);
+
     } else if (settings.provider === 'gemini') {
         if (!settings.geminiApiKey) {
             throw new Error('Gemini API key not configured. Please set it in the extension options.');
         }
-        // Gemini expects a different format
-        // Compose the prompt
-        let prompt = '';
-        if (systemPrompt || settings.systemPrompt) {
-            prompt += (systemPrompt || settings.systemPrompt) + '\n';
+
+        let finalContent = `Page content:\n${content}`;
+        // Special content formatting for persona-based LinkedIn comments
+        if (action === 'generate_linkedin_comment' && settings.userProfileInfo) {
+            finalContent = `USER PROFILE:\n${settings.userProfileInfo}\n\nPOST CONTENT:\n${content}`;
         }
-        if (content) {
-            prompt += 'Page content:\n' + content + '\n';
-        }
+
+        let prompt = `${finalSystemPrompt}\n\n${finalContent}`;
         if (userMessage) {
-            prompt += userMessage;
+            prompt += `\n\nUser question: ${userMessage}`;
         }
-        // Compose Gemini request
+
         const url = `${GEMINI_API_URL_BASE}${settings.model}:generateContent?key=${settings.geminiApiKey}`;
-        const body = JSON.stringify({
-            contents: [
-                {
-                    parts: [
-                        { text: prompt.trim() }
-                    ]
-                }
-            ]
+        const body = JSON.stringify({ contents: [{ parts: [{ text: prompt.trim() }] }] });
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body
         });
-        try {
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body
-            });
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.error?.message || 'Failed to get response from Gemini');
-            }
-            const data = await response.json();
-            // Gemini's response: data.candidates[0].content.parts[0].text
-            if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0].text) {
-                return data.candidates[0].content.parts[0].text;
-            } else {
-                throw new Error('Unexpected Gemini response format');
-            }
-        } catch (error) {
-            console.error('Gemini API Error:', error);
-            throw new Error(`Failed to process request: ${error.message}`);
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.error?.message || 'Failed to get response from Gemini');
+        }
+        if (data.candidates?.[0]?.content?.parts?.[0]?.text) {
+            return data.candidates[0].content.parts[0].text;
+        } else {
+            throw new Error('Unexpected Gemini response format');
         }
     } else {
         throw new Error('Unknown provider selected.');
