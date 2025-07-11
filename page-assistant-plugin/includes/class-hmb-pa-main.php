@@ -18,6 +18,8 @@ class Hmb_Pa_Main {
         // Admin Area
         require_once HMB_PA_PLUGIN_DIR . 'includes/admin/class-hmb-pa-admin-menu.php';
         require_once HMB_PA_PLUGIN_DIR . 'includes/admin/class-hmb-pa-settings-page.php';
+        require_once HMB_PA_PLUGIN_DIR . 'includes/admin/class-hmb-pa-controls-page.php';
+        require_once HMB_PA_PLUGIN_DIR . 'includes/admin/class-hmb-pa-analytics-page.php';
     }
 
     public function run() {

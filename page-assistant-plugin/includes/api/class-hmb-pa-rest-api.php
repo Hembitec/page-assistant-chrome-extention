@@ -96,16 +96,26 @@ class Hmb_Pa_Rest_Api {
     public function process_request($request) {
         $user_id = $request->get_param('user_id');
         $is_admin = user_can($user_id, 'manage_options');
+        $action = $request->get_param('action');
+        $user_profile = $request->get_param('user_profile');
 
-        // Only check token balance for non-admins
-        if (!$is_admin && Hmb_Pa_Db_Manager::get_token_balance($user_id) <= 0) {
-            return new WP_Error('no_tokens', 'You have run out of tokens. Please purchase more.', ['status' => 402]);
+        // Determine the specific action for logging and cost lookup
+        $log_action = $action;
+        if ($action === 'generate_linkedin_comment') {
+            $log_action = !empty($user_profile) ? 'linkedin_comment_persona' : 'linkedin_comment_generic';
         }
 
-        $action = $request->get_param('action');
+        // Get token costs from settings
+        $options = get_option('hmb_pa_controls');
+        $token_costs = isset($options['costs']) ? $options['costs'] : [];
+        $cost = isset($token_costs[$log_action]) ? (int) $token_costs[$log_action] : 1;
+
+        // Only check token balance for non-admins
+        if (!$is_admin && Hmb_Pa_Db_Manager::get_token_balance($user_id) < $cost) {
+            return new WP_Error('no_tokens', 'You do not have enough tokens for this action.', ['status' => 402]);
+        }
 
         try {
-            $user_profile = $request->get_param('user_profile');
             $result = Hmb_Pa_Gemini_Api::make_request(
                 $action,
                 $request->get_param('content'),
@@ -116,15 +126,11 @@ class Hmb_Pa_Rest_Api {
 
             // Only decrement tokens for non-admins after a successful API call
             if (!$is_admin) {
-                Hmb_Pa_Db_Manager::decrement_token_balance($user_id);
+                Hmb_Pa_Db_Manager::decrement_token_balance($user_id, $cost);
             }
 
-            // Log the transaction with a more specific action for LinkedIn comments
-            $log_action = $action;
-            if ($action === 'generate_linkedin_comment') {
-                $log_action = !empty($user_profile) ? 'linkedin_comment_persona' : 'linkedin_comment_generic';
-            }
-            Hmb_Pa_Db_Manager::log_transaction($user_id, $log_action);
+            // Log the transaction with the correct cost
+            Hmb_Pa_Db_Manager::log_transaction($user_id, $log_action, $cost);
 
             return new WP_REST_Response([
                 'success' => true,

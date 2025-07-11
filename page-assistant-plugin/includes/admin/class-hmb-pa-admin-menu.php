@@ -43,6 +43,24 @@ class Hmb_Pa_Admin_Menu {
             'hmb-page-assistant-settings',
             array('Hmb_Pa_Settings_Page', 'render')
         );
+
+        add_submenu_page(
+            'hmb-page-assistant',
+            'Controls',
+            'Controls',
+            'manage_options',
+            'hmb-page-assistant-controls',
+            array('Hmb_Pa_Controls_Page', 'render')
+        );
+
+        add_submenu_page(
+            'hmb-page-assistant',
+            'Analytics',
+            'Analytics',
+            'manage_options',
+            'hmb-page-assistant-analytics',
+            array('Hmb_Pa_Analytics_Page', 'render')
+        );
     }
 
     public function users_page_html() {

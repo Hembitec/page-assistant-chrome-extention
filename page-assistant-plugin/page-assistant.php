@@ -3,7 +3,7 @@
  * Plugin Name:       Page Assistant
  * Plugin URI:        https://hembitec.com/
  * Description:       Provides AI-powered page analysis and content generation tools for the Page Assistant Chrome Extension.
- * Version:           1.0.0
+ * Version:           1.1.0
  * Author:            Hembitec
  * Author URI:        https://hembitec.com/
  * License:           GPL v2 or later
@@ -17,7 +17,7 @@ if ( ! defined( 'WPINC' ) ) {
 }
 
 // Define plugin constants
-define( 'HMB_PA_VERSION', '1.0.0' );
+define( 'HMB_PA_VERSION', '1.1.0' );
 define( 'HMB_PA_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 
 // Main plugin class

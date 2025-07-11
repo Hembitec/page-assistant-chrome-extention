@@ -25,16 +25,17 @@ class Hmb_Pa_Db_Manager {
         return (int) get_user_meta($user_id, 'hmb_pa_tokens', true);
     }
 
-    public static function decrement_token_balance($user_id) {
+    public static function decrement_token_balance($user_id, $amount = 1) {
         $balance = self::get_token_balance($user_id);
-        if ($balance > 0) {
-            update_user_meta($user_id, 'hmb_pa_tokens', $balance - 1);
+        $amount = (int) $amount;
+        if ($balance >= $amount) {
+            update_user_meta($user_id, 'hmb_pa_tokens', $balance - $amount);
             return true;
         }
         return false;
     }
 
-    public static function log_transaction($user_id, $action) {
+    public static function log_transaction($user_id, $action, $tokens_used = 1) {
         global $wpdb;
         $table_name = $wpdb->prefix . 'hmb_pa_logs';
         
@@ -42,7 +43,6 @@ class Hmb_Pa_Db_Manager {
         if (user_can($user_id, 'manage_options')) {
             $balance_to_log = 9999; // Use a numerical indicator for 'Unlimited'
         } else {
-            // The balance has already been decremented in the API class, so we just get the current value.
             $balance_to_log = self::get_token_balance($user_id);
         }
 
@@ -52,7 +52,7 @@ class Hmb_Pa_Db_Manager {
                 'time'           => current_time('mysql'),
                 'user_id'        => $user_id,
                 'request_action' => $action,
-                'tokens_used'    => 1,
+                'tokens_used'    => $tokens_used,
                 'balance_after'  => $balance_to_log,
             ]
         );
@@ -60,12 +60,107 @@ class Hmb_Pa_Db_Manager {
 
     public static function allocate_initial_tokens($user_id) {
         if (get_user_meta($user_id, 'hmb_pa_tokens', true) === '') {
-            update_user_meta($user_id, 'hmb_pa_tokens', 50);
+            $options = get_option('hmb_pa_controls');
+            $initial_tokens = isset($options['initial_tokens']) ? (int) $options['initial_tokens'] : 50;
+            update_user_meta($user_id, 'hmb_pa_tokens', $initial_tokens);
         }
     }
 
     public static function set_token_balance($user_id, $amount) {
         update_user_meta($user_id, 'hmb_pa_tokens', (int) $amount);
+    }
+
+    // --- Analytics Methods ---
+
+    public static function get_total_tokens_used($start_date = null, $end_date = null) {
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'hmb_pa_logs';
+        $query = "SELECT SUM(tokens_used) FROM $table_name";
+        $where = [];
+        if ($start_date) {
+            $where[] = $wpdb->prepare("time >= %s", $start_date);
+        }
+        if ($end_date) {
+            $where[] = $wpdb->prepare("time <= %s", $end_date);
+        }
+        if (!empty($where)) {
+            $query .= " WHERE " . implode(" AND ", $where);
+        }
+        return (int) $wpdb->get_var($query);
+    }
+
+    public static function get_usage_by_action($start_date = null, $end_date = null) {
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'hmb_pa_logs';
+        $query = "SELECT request_action, SUM(tokens_used) as total_tokens, COUNT(id) as total_requests FROM $table_name";
+        $where = [];
+        if ($start_date) {
+            $where[] = $wpdb->prepare("time >= %s", $start_date);
+        }
+        if ($end_date) {
+            $where[] = $wpdb->prepare("time <= %s", $end_date);
+        }
+        if (!empty($where)) {
+            $query .= " WHERE " . implode(" AND ", $where);
+        }
+        $query .= " GROUP BY request_action ORDER BY total_tokens DESC";
+        return $wpdb->get_results($query, ARRAY_A);
+    }
+
+    public static function get_top_users($limit = 10, $start_date = null, $end_date = null) {
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'hmb_pa_logs';
+        $query = "SELECT user_id, SUM(tokens_used) as total_tokens FROM $table_name";
+        $where = [];
+        if ($start_date) {
+            $where[] = $wpdb->prepare("time >= %s", $start_date);
+        }
+        if ($end_date) {
+            $where[] = $wpdb->prepare("time <= %s", $end_date);
+        }
+        if (!empty($where)) {
+            $query .= " WHERE " . implode(" AND ", $where);
+        }
+        $query .= " GROUP BY user_id ORDER BY total_tokens DESC LIMIT %d";
+        return $wpdb->get_results($wpdb->prepare($query, $limit), ARRAY_A);
+    }
+
+    public static function get_daily_usage($start_date, $end_date) {
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'hmb_pa_logs';
+        
+        // Ensure dates are in the correct format
+        $start = date('Y-m-d', strtotime($start_date));
+        $end = date('Y-m-d', strtotime($end_date));
+
+        $query = $wpdb->prepare(
+            "SELECT DATE(time) as date, SUM(tokens_used) as total_tokens 
+             FROM $table_name 
+             WHERE time >= %s AND time < DATE_ADD(%s, INTERVAL 1 DAY)
+             GROUP BY DATE(time) 
+             ORDER BY DATE(time) ASC",
+            $start,
+            $end
+        );
+        
+        $results = $wpdb->get_results($query, ARRAY_A);
+
+        // Fill in missing dates with 0 tokens
+        $usage_data = [];
+        $current_date = new DateTime($start);
+        $end_date_obj = new DateTime($end);
+
+        while ($current_date <= $end_date_obj) {
+            $date_str = $current_date->format('Y-m-d');
+            $usage_data[$date_str] = 0;
+            $current_date->modify('+1 day');
+        }
+
+        foreach ($results as $row) {
+            $usage_data[$row['date']] = (int) $row['total_tokens'];
+        }
+
+        return $usage_data;
     }
 }
 
