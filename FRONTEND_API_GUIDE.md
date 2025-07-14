@@ -53,7 +53,7 @@ The user dashboard should be simple, clean, and functional. It is accessible onl
 A well-organized project structure is crucial for scalability and maintainability.
 
 ```
-/page-assistant-frontend
+/essenca-frontend
 |
 ├── /pages
 |   ├── /api
@@ -92,7 +92,7 @@ A well-organized project structure is crucial for scalability and maintainabilit
 This section details how to connect the Next.js app to the WordPress backend.
 
 **Base API URL**: All endpoints are prefixed with your WordPress site's REST URL. This can be found in the plugin's "API Settings" page.
-Example: `https://your-wordpress-site.com/wp-json/hmb-page-assistant/v1`
+Example: `https://your-wordpress-site.com/wp-json/essenca/v1`
 
 ---
 

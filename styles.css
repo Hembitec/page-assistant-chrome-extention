@@ -14,7 +14,7 @@
 }
 
 /* Floating Button */
-.page-assistant-btn {
+.essenca-btn {
   position: fixed;
   top: 50%;
   right: 0;
@@ -35,18 +35,18 @@
   overflow: hidden;
 }
 
-.page-assistant-btn:hover {
+.essenca-btn:hover {
   transform: translateY(-50%) translateX(-3px);
   background-color: var(--primary-hover);
 }
 
-.page-assistant-btn i {
+.essenca-btn i {
   color: white;
   font-size: 20px;
   margin-bottom: 5px;
 }
 
-.page-assistant-btn .btn-text {
+.essenca-btn .btn-text {
   color: white;
   font-size: 12px;
   font-weight: 500;
@@ -57,7 +57,7 @@
 }
 
 /* Popup Container */
-.page-assistant-popup {
+.essenca-popup {
   position: fixed;
   top: 50%;
   right: 50px;
@@ -77,7 +77,7 @@
   overflow: hidden;
 }
 
-.page-assistant-popup.active {
+.essenca-popup.active {
   display: flex;
   opacity: 1;
   transform: translateY(-50%) translateX(0);
@@ -407,7 +407,7 @@
 
 /* Responsive adjustments */
 @media (max-width: 500px) {
-  .page-assistant-popup {
+  .essenca-popup {
     width: 90%;
     right: 50px;
     transform: translateY(-50%);

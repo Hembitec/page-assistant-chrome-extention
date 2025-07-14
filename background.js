@@ -1,7 +1,7 @@
 // API endpoints
 const OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions';
 const GEMINI_API_URL_BASE = 'https://generativelanguage.googleapis.com/v1beta/models/';
-const PAGE_ASSISTANT_API_URL = 'https://insightlens.42web.io/wp-json/hmb-page-assistant/v1';
+const ESSENCA_API_URL = 'https://insightlens.42web.io/wp-json/essenca/v1';
 
 // System prompts for different actions
 const SYSTEM_PROMPTS = {
@@ -196,7 +196,7 @@ async function getSettings() {
     const syncPromise = new Promise((resolve) => {
         chrome.storage.sync.get(
             {
-                provider: 'page_assistant_api',
+                provider: 'essenca_api',
                 openaiApiKey: '',
                 geminiApiKey: '',
                 model: 'gpt-3.5-turbo',
@@ -230,12 +230,12 @@ async function makeAIRequest({ content, systemPrompt, history = [], userMessage 
     }
 
     // 2. Dispatch based on the selected provider
-    if (settings.provider === 'page_assistant_api') {
+    if (settings.provider === 'essenca_api') {
         if (!settings.jwtToken) {
             throw new Error('You are not logged in. Please log in from the extension settings.');
         }
 
-        const url = `${PAGE_ASSISTANT_API_URL}/process`;
+        const url = `${ESSENCA_API_URL}/process`;
         const body = {
             action,
             content,
@@ -255,7 +255,7 @@ async function makeAIRequest({ content, systemPrompt, history = [], userMessage 
 
         const data = await response.json();
         if (!response.ok) {
-            throw new Error(data.message || `An error occurred with the Page Assistant API at ${url}.`);
+            throw new Error(data.message || `An error occurred with the Essenca API at ${url}.`);
         }
         return data.result;
 

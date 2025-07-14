@@ -266,7 +266,7 @@ button.secondary:hover {
 #auth-modal button {
     width: 100%;
     padding: 10px;
-    background-color: #007bff;
+    background-color: var(--primary-color);
     color: white;
     border: none;
     border-radius: 4px;
@@ -274,7 +274,7 @@ button.secondary:hover {
 }
 
 #auth-modal button:hover {
-    background-color: #0056b3;
+    background-color: var(--primary-hover);
 }
 
 #auth-modal p {
@@ -303,6 +303,20 @@ button.secondary:hover {
         flex-direction: column;
         gap: 8px;
     }
+}
+
+#login-btn {
+    flex: 1;
+    background-color: var(--primary-color);
+    color: #fff;
+    border: none;
+    padding: 13px 0;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 600;
+    transition: background var(--transition-speed) ease, color var(--transition-speed) ease, border var(--transition-speed) ease;
+    box-shadow: none;
 }
 
 /* Tab Styles */

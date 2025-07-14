@@ -24,7 +24,7 @@ const modelHintOpenAI = document.getElementById('modelHintOpenAI');
 const modelHintGemini = document.getElementById('modelHintGemini');
 const openaiApiGroup = document.getElementById('openai-api-group');
 const geminiApiGroup = document.getElementById('gemini-api-group');
-const pageAssistantApiGroup = document.getElementById('page-assistant-api-group');
+const essencaApiGroup = document.getElementById('essenca-api-group');
 
 // Auth Modal Elements
 const authModal = document.getElementById('auth-modal');
@@ -40,7 +40,7 @@ const logoutBtn = document.getElementById('logout-btn');
 const authStatusDiv = document.getElementById('auth-status');
 
 // API URL
-const API_BASE_URL = 'https://insightlens.42web.io/wp-json/hmb-page-assistant/v1';
+const API_BASE_URL = 'https://insightlens.42web.io/wp-json/essenca/v1';
 
 // Load saved settings
 function loadSettings() {
@@ -55,7 +55,7 @@ function loadSettings() {
 
     chrome.storage.sync.get(
         {
-            provider: 'page_assistant_api',
+            provider: 'essenca_api',
             openaiApiKey: '',
             geminiApiKey: '',
             model: 'gemini-2.5-flash',
@@ -104,7 +104,7 @@ function saveSettings() {
         showStatus('Error: Gemini API key is required.', 'error');
         return;
     }
-    if (provider !== 'page_assistant_api' && !model) {
+    if (provider !== 'essenca_api' && !model) {
         showStatus('Error: Model name cannot be empty', 'error');
         return;
     }
@@ -209,25 +209,26 @@ Array.from(document.querySelectorAll('.model-option')).forEach(option => {
 function updateProviderUI(provider) {
     openaiApiGroup.style.display = 'none';
     geminiApiGroup.style.display = 'none';
-    pageAssistantApiGroup.style.display = 'none';
+    essencaApiGroup.style.display = 'none';
     modelInput.parentElement.style.display = 'block';
+    modelOptionsOpenAI.style.display = 'none';
+    modelOptionsGemini.style.display = 'none';
+    modelHintOpenAI.style.display = 'none';
+    modelHintGemini.style.display = 'none';
+
 
     if (provider === 'openai') {
         openaiApiGroup.style.display = 'block';
         modelOptionsOpenAI.style.display = 'flex';
-        modelOptionsGemini.style.display = 'none';
         modelHintOpenAI.style.display = 'block';
-        modelHintGemini.style.display = 'none';
         modelInput.placeholder = 'gpt-3.5-turbo';
     } else if (provider === 'gemini') {
         geminiApiGroup.style.display = 'block';
-        modelOptionsOpenAI.style.display = 'none';
         modelOptionsGemini.style.display = 'flex';
-        modelHintOpenAI.style.display = 'none';
         modelHintGemini.style.display = 'block';
         modelInput.placeholder = 'gemini-pro';
-    } else if (provider === 'page_assistant_api') {
-        pageAssistantApiGroup.style.display = 'block';
+    } else if (provider === 'essenca_api') {
+        essencaApiGroup.style.display = 'block';
         modelInput.parentElement.style.display = 'none'; // Hide model selection
     }
 }

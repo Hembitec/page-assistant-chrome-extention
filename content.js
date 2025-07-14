@@ -89,12 +89,12 @@ function isArticle() {
 function createElements() {
     // Create button
     const button = document.createElement('button');
-    button.className = 'page-assistant-btn';
+    button.className = 'essenca-btn';
     button.innerHTML = '<i class="fas fa-feather-alt"></i><div class="btn-text">Chat</div>';
 
     // Create popup
     const popup = document.createElement('div');
-    popup.className = 'page-assistant-popup';
+    popup.className = 'essenca-popup';
 
     // Create popup content
     popup.innerHTML = `
@@ -584,8 +584,8 @@ function formatMarkdown(text) {
 // Initialize the extension
 function init() {
     // Remove any existing elements
-    const existingButton = document.querySelector('.page-assistant-btn');
-    const existingPopup = document.querySelector('.page-assistant-popup');
+    const existingButton = document.querySelector('.essenca-btn');
+    const existingPopup = document.querySelector('.essenca-popup');
 
     if (existingButton) existingButton.remove();
     if (existingPopup) existingPopup.remove();
