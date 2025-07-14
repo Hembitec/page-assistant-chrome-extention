@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <title>InsightLens Settings</title>
+    <title>Essenca Settings</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="settings.css">
 </head>
@@ -10,7 +10,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <div class="logo"><i class="fas fa-cog"></i></div>
+            <div class="logo"><i class="fas fa-leaf"></i></div>
             <h1>Settings</h1>
         </div>
 
@@ -24,7 +24,7 @@
                 <div class="form-group">
                     <label for="provider">AI Provider</label>
                     <select id="provider">
-                        <option value="page_assistant_api">Page Assistant API</option>
+                        <option value="essenca_api">Essenca API</option>
                         <option value="openai">OpenAI</option>
                         <option value="gemini">Gemini</option>
                     </select>
@@ -88,10 +88,10 @@
                         model
                         name.</div>
                 </div>
-                <div class="form-group" id="page-assistant-api-group" style="display:none;">
+                <div class="form-group" id="essenca-api-group" style="display:none;">
                     <label>Account</label>
                     <div id="auth-logged-out">
-                        <p>Log in or create an account to use the Page Assistant API.</p>
+                        <p>Log in or create an account to use the Essenca API.</p>
                         <button id="login-btn">Login / Sign Up</button>
                     </div>
                     <div id="auth-logged-in" style="display:none;">
@@ -150,7 +150,7 @@
         <div id="status"></div>
 
         <div class="footer">
-            InsightLens v1.1.0 &bull; Powered by OpenAI & Gemini
+            Essenca v1.1.0 &bull; Powered by OpenAI & Gemini
         </div>
     </div>
 

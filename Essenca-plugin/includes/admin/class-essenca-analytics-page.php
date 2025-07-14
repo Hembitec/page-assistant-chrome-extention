@@ -1,6 +1,6 @@
 <?php
 
-class Hmb_Pa_Analytics_Page {
+class Essenca_Analytics_Page {
 
     public static function render() {
         // Enqueue Chart.js
@@ -11,10 +11,10 @@ class Hmb_Pa_Analytics_Page {
         $end_date = isset($_GET['end_date']) && !empty($_GET['end_date']) ? sanitize_text_field($_GET['end_date']) : date('Y-m-d');
 
         // Fetch data
-        $total_tokens = Hmb_Pa_Db_Manager::get_total_tokens_used($start_date, $end_date);
-        $usage_by_action = Hmb_Pa_Db_Manager::get_usage_by_action($start_date, $end_date);
-        $top_users = Hmb_Pa_Db_Manager::get_top_users(10, $start_date, $end_date);
-        $daily_usage = Hmb_Pa_Db_Manager::get_daily_usage($start_date, $end_date);
+        $total_tokens = Essenca_Db_Manager::get_total_tokens_used($start_date, $end_date);
+        $usage_by_action = Essenca_Db_Manager::get_usage_by_action($start_date, $end_date);
+        $top_users = Essenca_Db_Manager::get_top_users(10, $start_date, $end_date);
+        $daily_usage = Essenca_Db_Manager::get_daily_usage($start_date, $end_date);
 
         // Prepare data for charts
         $usage_labels = wp_list_pluck($usage_by_action, 'request_action');
@@ -31,7 +31,7 @@ class Hmb_Pa_Analytics_Page {
         $daily_data = array_values($daily_usage);
         ?>
         <style>
-            .hmb-pa-analytics-header {
+            .essenca-analytics-header {
                 display: flex;
                 gap: 20px;
                 margin-bottom: 20px;
@@ -40,37 +40,37 @@ class Hmb_Pa_Analytics_Page {
                 border: 1px solid #ccd0d4;
                 border-radius: 4px;
             }
-            .hmb-pa-analytics-header .filter-form {
+            .essenca-analytics-header .filter-form {
                 flex: 2;
             }
-            .hmb-pa-analytics-header .summary-box {
+            .essenca-analytics-header .summary-box {
                 flex: 1;
                 text-align: center;
                 border-left: 1px solid #eee;
                 padding-left: 20px;
             }
-            .hmb-pa-analytics-header .summary-box h2 {
+            .essenca-analytics-header .summary-box h2 {
                 margin-top: 0;
             }
-            .hmb-pa-analytics-header .summary-box p {
+            .essenca-analytics-header .summary-box p {
                 font-size: 2em;
                 font-weight: bold;
                 margin: 0;
             }
         </style>
         <div class="wrap">
-            <h1>Page Assistant Analytics</h1>
+            <h1>Essenca Analytics</h1>
 
-            <div class="hmb-pa-analytics-header">
+            <div class="essenca-analytics-header">
                 <div class="filter-form">
                     <form method="get">
-                        <input type="hidden" name="page" value="hmb-page-assistant-analytics">
+                        <input type="hidden" name="page" value="essenca-analytics">
                         <label for="start_date">Start Date:</label>
                         <input type="date" id="start_date" name="start_date" value="<?php echo esc_attr($start_date); ?>">
                         <label for="end_date">End Date:</label>
                         <input type="date" id="end_date" name="end_date" value="<?php echo esc_attr($end_date); ?>">
                         <input type="submit" class="button-primary" value="Filter">
-                        <a href="?page=hmb-page-assistant-analytics" class="button">Clear</a>
+                        <a href="?page=essenca-analytics" class="button">Clear</a>
                     </form>
                 </div>
                 <div class="summary-box">

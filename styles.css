@@ -1,14 +1,14 @@
 :root {
-  --primary-color: #f88d13;
-  --primary-hover: #c2ae79;
-  --secondary-color: #f5f5f5;
-  --text-color: #292929;
-  --text-light: #666;
-  --border-color: #e0e0e0;
-  --ai-message-bg: #f9f9f9;
-  --user-message-bg: #f9f6e3;
-  --shadow-light: 0 2px 10px rgba(0, 0, 0, 0.1);
-  --shadow-medium: 0 4px 20px rgba(0, 0, 0, 0.15);
+  --primary-color: #DA7756;
+  --primary-hover: #BD5D3A;
+  --secondary-color: #DDD9C5;
+  --text-color: #3D3929;
+  --text-light: #6D6A58;
+  --border-color: #CBC4A4;
+  --ai-message-bg: #F0EEE5;
+  --user-message-bg: #DDD9C5;
+  --shadow-light: 0 2px 10px rgba(184, 175, 132, 0.1);
+  --shadow-medium: 0 4px 20px rgba(184, 175, 132, 0.15);
   --border-radius: 12px;
   --transition-speed: 0.2s;
 }
@@ -63,7 +63,7 @@
   right: 50px;
   transform: translateY(-50%);
   width: 450px;
-  background: white;
+  background: #F0EEE5;
   border-radius: var(--border-radius);
   box-shadow: var(--shadow-medium);
   z-index: 9998;
@@ -144,8 +144,15 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .message.ai {
@@ -164,7 +171,7 @@
 
 .message.welcome {
   align-self: center;
-  background-color: white;
+  background-color: #F0EEE5;
   border: 1px solid var(--border-color);
   border-radius: 8px;
   text-align: center;
@@ -219,7 +226,7 @@
 .hot-button {
   flex: 1;
   padding: 10px;
-  background-color: white;
+  background-color: #F0EEE5;
   border: 1px solid var(--border-color);
   border-radius: 8px;
   cursor: pointer;
@@ -251,7 +258,7 @@
   display: flex;
   padding: 12px 20px;
   border-top: 1px solid var(--border-color);
-  background-color: white;
+  background-color: #F0EEE5;
   flex-shrink: 0;
   align-items: center;
   gap: 10px;
@@ -329,8 +336,14 @@
 }
 
 /* Icon Styles */
-.icon-chat, .icon-summary, .icon-idea, .icon-search, .icon-settings, 
-.icon-warning, .icon-check, .icon-loading {
+.icon-chat,
+.icon-summary,
+.icon-idea,
+.icon-search,
+.icon-settings,
+.icon-warning,
+.icon-check,
+.icon-loading {
   display: inline-block;
   width: 24px;
   height: 24px;
@@ -379,9 +392,17 @@
 }
 
 @keyframes pulse {
-  0% { opacity: 0.6; }
-  50% { opacity: 1; }
-  100% { opacity: 0.6; }
+  0% {
+    opacity: 0.6;
+  }
+
+  50% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0.6;
+  }
 }
 
 /* Responsive adjustments */
@@ -391,7 +412,7 @@
     right: 50px;
     transform: translateY(-50%);
   }
-  
+
   .message {
     max-width: 90%;
   }

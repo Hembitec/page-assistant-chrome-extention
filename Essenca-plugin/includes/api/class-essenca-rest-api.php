@@ -1,37 +1,83 @@
 <?php
 
-class Hmb_Pa_Rest_Api {
+class Essenca_Rest_Api {
 
     public function __construct() {
         add_action('rest_api_init', array($this, 'register_routes'));
     }
 
     public function register_routes() {
-        register_rest_route('hmb-page-assistant/v1', '/register', [
+        register_rest_route('essenca/v1', '/register', [
             'methods' => 'POST',
             'callback' => array($this, 'register_user'),
             'permission_callback' => '__return_true'
         ]);
-        register_rest_route('hmb-page-assistant/v1', '/token', [
+        register_rest_route('essenca/v1', '/token', [
             'methods' => 'POST',
             'callback' => array($this, 'generate_token'),
             'permission_callback' => '__return_true'
         ]);
-        register_rest_route('hmb-page-assistant/v1', '/process', [
+        register_rest_route('essenca/v1', '/process', [
             'methods' => 'POST',
             'callback' => array($this, 'process_request'),
             'permission_callback' => array($this, 'check_permission')
         ]);
-        register_rest_route('hmb-page-assistant/v1', '/balance', [
+        register_rest_route('essenca/v1', '/balance', [
             'methods' => 'GET',
             'callback' => array($this, 'get_balance_endpoint'),
             'permission_callback' => array($this, 'check_permission')
         ]);
-        register_rest_route('hmb-page-assistant/v1', '/test', [
+        register_rest_route('essenca/v1', '/test', [
             'methods' => 'POST',
             'callback' => array($this, 'test_api_key'),
             'permission_callback' => '__return_true' // Or check for admin nonce
         ]);
+
+        // --- User Dashboard Endpoints ---
+        register_rest_route('essenca/v1', '/user/me', [
+            'methods' => 'GET',
+            'callback' => array($this, 'get_current_user_data'),
+            'permission_callback' => array($this, 'check_permission')
+        ]);
+
+        register_rest_route('essenca/v1', '/user/activity', [
+            'methods' => 'GET',
+            'callback' => array($this, 'get_current_user_activity'),
+            'permission_callback' => array($this, 'check_permission')
+        ]);
+    }
+
+    public function get_current_user_data($request) {
+        $user_id = $request->get_param('user_id');
+        $user = get_userdata($user_id);
+
+        if (!$user) {
+            return new WP_Error('user_not_found', 'User not found.', ['status' => 404]);
+        }
+
+        $balance = user_can($user_id, 'manage_options') ? 'Unlimited' : Essenca_Db_Manager::get_token_balance($user_id);
+
+        $response_data = [
+            'id' => $user->ID,
+            'username' => $user->user_login,
+            'email' => $user->user_email,
+            'token_balance' => $balance,
+        ];
+
+        return new WP_REST_Response($response_data, 200);
+    }
+
+    public function get_current_user_activity($request) {
+        global $wpdb;
+        $user_id = $request->get_param('user_id');
+        $table_name = $wpdb->prefix . 'essenca_logs';
+
+        $logs = $wpdb->get_results($wpdb->prepare(
+            "SELECT time, request_action, tokens_used FROM $table_name WHERE user_id = %d ORDER BY time DESC LIMIT 50",
+            $user_id
+        ), ARRAY_A);
+
+        return new WP_REST_Response($logs, 200);
     }
 
     public function register_user($request) {
@@ -62,7 +108,7 @@ class Hmb_Pa_Rest_Api {
         if (is_wp_error($user)) {
             return new WP_Error('authentication_failed', 'Invalid username or password.', ['status' => 403]);
         }
-        $token = Hmb_Pa_Jwt_Handler::generate($user->ID);
+        $token = Essenca_Jwt_Handler::generate($user->ID);
         return new WP_REST_Response(['token' => $token, 'user_email' => $user->user_email, 'user_display_name' => $user->display_name], 200);
     }
 
@@ -75,7 +121,7 @@ class Hmb_Pa_Rest_Api {
         if (!$token) {
             return new WP_Error('bad_auth_header', 'Malformed Authorization header.', ['status' => 401]);
         }
-        $payload = Hmb_Pa_Jwt_Handler::validate($token);
+        $payload = Essenca_Jwt_Handler::validate($token);
         if (!$payload) {
             return new WP_Error('invalid_token', 'The provided token is invalid or has expired.', ['status' => 403]);
         }
@@ -88,7 +134,7 @@ class Hmb_Pa_Rest_Api {
         if (user_can($user_id, 'manage_options')) {
             $balance = 'Unlimited';
         } else {
-            $balance = Hmb_Pa_Db_Manager::get_token_balance($user_id);
+            $balance = Essenca_Db_Manager::get_token_balance($user_id);
         }
         return new WP_REST_Response(['success' => true, 'balance' => $balance], 200);
     }
@@ -106,17 +152,17 @@ class Hmb_Pa_Rest_Api {
         }
 
         // Get token costs from settings
-        $options = get_option('hmb_pa_controls');
+        $options = get_option('essenca_controls');
         $token_costs = isset($options['costs']) ? $options['costs'] : [];
         $cost = isset($token_costs[$log_action]) ? (int) $token_costs[$log_action] : 1;
 
         // Only check token balance for non-admins
-        if (!$is_admin && Hmb_Pa_Db_Manager::get_token_balance($user_id) < $cost) {
+        if (!$is_admin && Essenca_Db_Manager::get_token_balance($user_id) < $cost) {
             return new WP_Error('no_tokens', 'You do not have enough tokens for this action.', ['status' => 402]);
         }
 
         try {
-            $result = Hmb_Pa_Gemini_Api::make_request(
+            $result = Essenca_Gemini_Api::make_request(
                 $action,
                 $request->get_param('content'),
                 $request->get_param('message'),
@@ -126,16 +172,16 @@ class Hmb_Pa_Rest_Api {
 
             // Only decrement tokens for non-admins after a successful API call
             if (!$is_admin) {
-                Hmb_Pa_Db_Manager::decrement_token_balance($user_id, $cost);
+                Essenca_Db_Manager::decrement_token_balance($user_id, $cost);
             }
 
             // Log the transaction with the correct cost
-            Hmb_Pa_Db_Manager::log_transaction($user_id, $log_action, $cost);
+            Essenca_Db_Manager::log_transaction($user_id, $log_action, $cost);
 
             return new WP_REST_Response([
                 'success' => true,
                 'result' => $result,
-                'tokens_remaining' => Hmb_Pa_Db_Manager::get_token_balance($user_id)
+                'tokens_remaining' => Essenca_Db_Manager::get_token_balance($user_id)
             ], 200);
         } catch (Exception $e) {
             // If the API call fails, the token is not deducted, so no refund is necessary.
@@ -145,7 +191,7 @@ class Hmb_Pa_Rest_Api {
 
     public function test_api_key() {
         try {
-            $result = Hmb_Pa_Gemini_Api::test_connection();
+            $result = Essenca_Gemini_Api::test_connection();
             return new WP_REST_Response(['success' => true, 'message' => $result], 200);
         } catch (Exception $e) {
             return new WP_Error('test_failed', 'API Error: ' . $e->getMessage(), ['status' => 500]);

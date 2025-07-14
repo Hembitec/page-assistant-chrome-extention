@@ -1,6 +1,6 @@
 <?php
 
-class Hmb_Pa_Jwt_Handler {
+class Essenca_Jwt_Handler {
 
     private static function base64url_encode($data) {
         return rtrim(strtr(base64_encode($data), '+/', '-_'), '=');
@@ -11,7 +11,7 @@ class Hmb_Pa_Jwt_Handler {
     }
 
     public static function generate($user_id) {
-        $secret_key = get_option('hmb_pa_jwt_secret_key');
+        $secret_key = get_option('essenca_jwt_secret_key');
         if (empty($secret_key)) {
             $secret_key = 'default-secret-key-please-change-in-settings';
         }
@@ -29,7 +29,7 @@ class Hmb_Pa_Jwt_Handler {
     }
 
     public static function validate($jwt) {
-        $secret_key = get_option('hmb_pa_jwt_secret_key');
+        $secret_key = get_option('essenca_jwt_secret_key');
         if (empty($secret_key)) {
             return null;
         }

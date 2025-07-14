@@ -3,6 +3,10 @@ function addFontAwesome() {
     const link = document.createElement('link');
     link.rel = 'stylesheet';
     link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css';
+    link.onload = () => {
+        // Font Awesome has loaded, now we can initialize the extension
+        init();
+    };
     document.head.appendChild(link);
 }
 
@@ -41,17 +45,17 @@ function activateAssistant() {
     // If we already have the assistant elements, just toggle the popup
     if (assistantElements && assistantElements.popup) {
         const isActive = assistantElements.popup.classList.contains('active');
-        
+
         if (isActive) {
             assistantElements.popup.classList.remove('active');
         } else {
             assistantElements.popup.classList.add('active');
-            
+
             // If this is the first time opening, add welcome message
             const chatContainer = assistantElements.popup.querySelector('.chat-container');
             if (chatContainer.children.length === 0) {
                 addMessage('welcome', 'Welcome! I can help you understand this page. Try the buttons below or ask me a question.', chatContainer);
-                
+
                 // Pre-fetch article content
                 if (!articleContent) {
                     articleContent = getArticleContent();
@@ -61,7 +65,7 @@ function activateAssistant() {
     } else {
         // Initialize the assistant if it doesn't exist yet
         init();
-        
+
         // Activate the popup after a short delay to ensure it's been created
         setTimeout(() => {
             if (assistantElements && assistantElements.popup) {
@@ -74,11 +78,11 @@ function activateAssistant() {
 // Only run on article pages
 function isArticle() {
     // Check if we're on an article page by looking for article-specific elements
-    return document.querySelector('article') !== null || 
-           document.querySelector('[role="article"]') !== null ||
-           document.querySelector('.article') !== null ||
-           document.querySelector('.post') !== null ||
-           document.querySelector('.blog-post') !== null;
+    return document.querySelector('article') !== null ||
+        document.querySelector('[role="article"]') !== null ||
+        document.querySelector('.article') !== null ||
+        document.querySelector('.post') !== null ||
+        document.querySelector('.blog-post') !== null;
 }
 
 // Create the UI elements
@@ -86,15 +90,15 @@ function createElements() {
     // Create button
     const button = document.createElement('button');
     button.className = 'page-assistant-btn';
-    button.innerHTML = '<i class="fas fa-comments"></i><div class="btn-text">Chat</div>';
-    
+    button.innerHTML = '<i class="fas fa-feather-alt"></i><div class="btn-text">Chat</div>';
+
     // Create popup
     const popup = document.createElement('div');
     popup.className = 'page-assistant-popup';
-    
+
     // Create popup content
     popup.innerHTML = `
-        <div class="popup-header"><i class="fas fa-comments"></i> Page Assistant
+        <div class="popup-header"><i class="fas fa-leaf"></i> Essenca
             <button class="popup-close">×</button>
         </div>
         <div class="chat-container"></div>
@@ -107,7 +111,7 @@ function createElements() {
             <button class="send-button"><i class="fas fa-paper-plane"></i></button>
         </div>
     `;
-    
+
     return { button, popup };
 }
 
@@ -115,23 +119,23 @@ function createElements() {
 function addMessage(type, content, container) {
     const messageElement = document.createElement('div');
     messageElement.className = `message ${type}`;
-    
+
     if (type === 'loading') {
         messageElement.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Thinking...`;
     } else {
         messageElement.innerHTML = formatMarkdown(content);
-        
+
         // Add to conversation history if it's a user or AI message
         if (type === 'user' || type === 'ai') {
             conversationHistory.push({ role: type === 'user' ? 'user' : 'assistant', content });
         }
     }
-    
+
     container.appendChild(messageElement);
-    
+
     // Scroll to the bottom
     container.scrollTop = container.scrollHeight;
-    
+
     return messageElement;
 }
 
@@ -139,18 +143,18 @@ function addMessage(type, content, container) {
 function handleButtonClick(button, popup) {
     button.addEventListener('click', () => {
         const isActive = popup.classList.contains('active');
-        
+
         if (isActive) {
             popup.classList.remove('active');
         } else {
             popup.classList.add('active');
-            
+
             const chatContainer = popup.querySelector('.chat-container');
-            
+
             // If this is the first time opening, add welcome message
             if (chatContainer.children.length === 0) {
                 addMessage('welcome', 'Welcome! I can help you understand this page. Try the buttons below or ask me a question.', chatContainer);
-                
+
                 // Pre-fetch article content
                 if (!articleContent) {
                     articleContent = getArticleContent();
@@ -158,7 +162,7 @@ function handleButtonClick(button, popup) {
             }
         }
     });
-    
+
     // Handle close button
     const closeButton = popup.querySelector('.popup-close');
     closeButton.addEventListener('click', (e) => {
@@ -171,29 +175,29 @@ function handleButtonClick(button, popup) {
 function handleHotButtons(popup) {
     const chatContainer = popup.querySelector('.chat-container');
     const hotButtons = popup.querySelectorAll('.hot-button');
-    
+
     hotButtons.forEach(button => {
         button.addEventListener('click', () => {
             const action = button.dataset.action;
-            
+
             // Get article content if not already fetched
             if (!articleContent) {
                 articleContent = getArticleContent();
             }
-            
+
             // Add user message
-            const userMessage = action === 'summary' 
-                ? 'Summarize this page for me' 
+            const userMessage = action === 'summary'
+                ? 'Summarize this page for me'
                 : 'What is the key takeaway from this page?';
-            
+
             addMessage('user', userMessage, chatContainer);
-            
+
             // Add loading message
             const loadingMessage = addMessage('loading', '', chatContainer);
-            
+
             // Send to background script
             chrome.runtime.sendMessage(
-                { 
+                {
                     action: action,
                     content: articleContent,
                     history: conversationHistory.slice(-10) // Send last 10 messages for context
@@ -201,7 +205,7 @@ function handleHotButtons(popup) {
                 response => {
                     // Remove loading message
                     chatContainer.removeChild(loadingMessage);
-                    
+
                     if (response.success) {
                         addMessage('ai', response.result, chatContainer);
                     } else {
@@ -218,28 +222,28 @@ function handleChatInput(popup) {
     const chatContainer = popup.querySelector('.chat-container');
     const chatInput = popup.querySelector('.chat-input');
     const sendButton = popup.querySelector('.send-button');
-    
+
     function sendMessage() {
         const message = chatInput.value.trim();
         if (!message) return;
-        
+
         // Add user message to chat
         addMessage('user', message, chatContainer);
-        
+
         // Clear input
         chatInput.value = '';
-        
+
         // Get article content if not already fetched
         if (!articleContent) {
             articleContent = getArticleContent();
         }
-        
+
         // Add loading message
         const loadingMessage = addMessage('loading', '', chatContainer);
-        
+
         // Send to background script
         chrome.runtime.sendMessage(
-            { 
+            {
                 action: 'chat',
                 content: articleContent,
                 message: message,
@@ -248,7 +252,7 @@ function handleChatInput(popup) {
             response => {
                 // Remove loading message
                 chatContainer.removeChild(loadingMessage);
-                
+
                 if (response.success) {
                     addMessage('ai', response.result, chatContainer);
                 } else {
@@ -257,10 +261,10 @@ function handleChatInput(popup) {
             }
         );
     }
-    
+
     // Send on button click
     sendButton.addEventListener('click', sendMessage);
-    
+
     // Send on Enter key
     chatInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
@@ -281,11 +285,11 @@ function handleClickOutside(button, popup) {
 // Function to check if we're on an email page
 function isEmailPage() {
     const url = window.location.href.toLowerCase();
-    return url.includes('mail.google.com') || 
-           url.includes('outlook.live.com') || 
-           url.includes('outlook.office.com') ||
-           url.includes('mail.yahoo.com') ||
-           url.includes('protonmail.com');
+    return url.includes('mail.google.com') ||
+        url.includes('outlook.live.com') ||
+        url.includes('outlook.office.com') ||
+        url.includes('mail.yahoo.com') ||
+        url.includes('protonmail.com');
 }
 
 // Get page content
@@ -377,31 +381,31 @@ function getStandardArticleContent() {
     // Get article title
     const titleElement = document.querySelector('h1');
     const title = titleElement ? titleElement.textContent.trim() : 'Untitled Page';
-    
+
     // Get article content
-    const article = document.querySelector('article') || 
-                   document.querySelector('[role="article"]') || 
-                   document.querySelector('.article') || 
-                   document.querySelector('.post') || 
-                   document.querySelector('.blog-post');
-    
+    const article = document.querySelector('article') ||
+        document.querySelector('[role="article"]') ||
+        document.querySelector('.article') ||
+        document.querySelector('.post') ||
+        document.querySelector('.blog-post');
+
     if (!article) {
         return null;
     }
-    
+
     // Get all paragraphs and headers
     const contentElements = article.querySelectorAll('p, h1, h2, h3, h4, h5, h6');
     let content = '';
-    
+
     contentElements.forEach(element => {
         // Skip elements that are part of embeds, comments, or other non-article content
-        if (element.closest('.supplementalPostContent') || 
+        if (element.closest('.supplementalPostContent') ||
             element.closest('.responsesWrapper') ||
             element.closest('.butterBar') ||
             element.closest('.comments')) {
             return;
         }
-        
+
         // Add appropriate spacing based on element type
         if (element.tagName.toLowerCase().startsWith('h')) {
             content += element.textContent.trim() + '\n\n';
@@ -409,31 +413,31 @@ function getStandardArticleContent() {
             content += element.textContent.trim() + '\n\n';
         }
     });
-    
+
     return `${title}\n\n${content}`;
 }
 
 // Get content from main content area
 function getMainContent() {
     // Try to find main content area
-    const main = document.querySelector('main') || 
-                document.querySelector('#main') || 
-                document.querySelector('.main') ||
-                document.querySelector('#content') || 
-                document.querySelector('.content');
-    
+    const main = document.querySelector('main') ||
+        document.querySelector('#main') ||
+        document.querySelector('.main') ||
+        document.querySelector('#content') ||
+        document.querySelector('.content');
+
     if (!main) {
         return null;
     }
-    
+
     // Get title
     const titleElement = document.querySelector('h1') || document.querySelector('title');
     const title = titleElement ? titleElement.textContent.trim() : 'Untitled Page';
-    
+
     // Get all paragraphs and headers
     const contentElements = main.querySelectorAll('p, h1, h2, h3, h4, h5, h6');
     let content = '';
-    
+
     contentElements.forEach(element => {
         // Add appropriate spacing based on element type
         if (element.tagName.toLowerCase().startsWith('h')) {
@@ -442,7 +446,7 @@ function getMainContent() {
             content += element.textContent.trim() + '\n\n';
         }
     });
-    
+
     return `${title}\n\n${content}`;
 }
 
@@ -451,30 +455,30 @@ function getGeneralPageContent() {
     // Get title
     const titleElement = document.querySelector('title') || document.querySelector('h1');
     const title = titleElement ? titleElement.textContent.trim() : window.location.href;
-    
+
     // Get all paragraphs and headers from the body
     const contentElements = document.body.querySelectorAll('p, h1, h2, h3, h4, h5, h6');
     let content = '';
-    
+
     // Limit to first 50 elements to avoid overwhelming with content
     const elementsArray = Array.from(contentElements).slice(0, 50);
-    
+
     elementsArray.forEach(element => {
         // Skip hidden elements or those with very little content
         if (element.offsetParent === null || element.textContent.trim().length < 5) {
             return;
         }
-        
+
         // Skip elements that are likely navigation, footer, etc.
-        if (element.closest('nav') || 
-            element.closest('footer') || 
+        if (element.closest('nav') ||
+            element.closest('footer') ||
             element.closest('header') ||
-            element.closest('.navigation') || 
+            element.closest('.navigation') ||
             element.closest('.menu') ||
             element.closest('.sidebar')) {
             return;
         }
-        
+
         // Add appropriate spacing based on element type
         if (element.tagName.toLowerCase().startsWith('h')) {
             content += element.textContent.trim() + '\n\n';
@@ -482,12 +486,12 @@ function getGeneralPageContent() {
             content += element.textContent.trim() + '\n\n';
         }
     });
-    
+
     // If we couldn't extract much content, add URL
     if (content.length < 100) {
         content += `\n\nPage URL: ${window.location.href}`;
     }
-    
+
     return `${title}\n\n${content}`;
 }
 
@@ -495,30 +499,30 @@ function getGeneralPageContent() {
 function getEmailContent() {
     const url = window.location.href.toLowerCase();
     let emailContent = '';
-    
+
     // Get title/subject
     let title = 'Email Content';
-    
+
     // Gmail
     if (url.includes('mail.google.com')) {
         const subjectElement = document.querySelector('h2[data-thread-perm-id]');
         if (subjectElement) {
             title = 'Email: ' + subjectElement.textContent.trim();
         }
-        
+
         // Try to get email body
         const emailBody = document.querySelector('.a3s.aiL') || document.querySelector('[role="main"]');
         if (emailBody) {
             emailContent = emailBody.innerText;
         }
-    } 
+    }
     // Outlook
     else if (url.includes('outlook.')) {
         const subjectElement = document.querySelector('[role="heading"][aria-level="2"]');
         if (subjectElement) {
             title = 'Email: ' + subjectElement.textContent.trim();
         }
-        
+
         // Try to get email body
         const emailBody = document.querySelector('[role="region"][aria-label*="Message body"]');
         if (emailBody) {
@@ -528,26 +532,26 @@ function getEmailContent() {
     // Other email providers - generic approach
     else {
         // Try common email subject selectors
-        const subjectElement = document.querySelector('.subject') || 
-                              document.querySelector('[data-testid="message-subject"]');
+        const subjectElement = document.querySelector('.subject') ||
+            document.querySelector('[data-testid="message-subject"]');
         if (subjectElement) {
             title = 'Email: ' + subjectElement.textContent.trim();
         }
-        
+
         // Try to get email body using common selectors
-        const emailBody = document.querySelector('.email-body') || 
-                         document.querySelector('.message-body') || 
-                         document.querySelector('[role="main"]');
+        const emailBody = document.querySelector('.email-body') ||
+            document.querySelector('.message-body') ||
+            document.querySelector('[role="main"]');
         if (emailBody) {
             emailContent = emailBody.innerText;
         }
     }
-    
+
     // If we couldn't extract content, provide a generic message
     if (!emailContent || emailContent.length < 20) {
         return 'This appears to be an email. I can help you with questions about it, but I couldn\'t extract the specific content.';
     }
-    
+
     return `${title}\n\n${emailContent}`;
 }
 
@@ -582,19 +586,19 @@ function init() {
     // Remove any existing elements
     const existingButton = document.querySelector('.page-assistant-btn');
     const existingPopup = document.querySelector('.page-assistant-popup');
-    
+
     if (existingButton) existingButton.remove();
     if (existingPopup) existingPopup.remove();
-    
+
     const { button, popup } = createElements();
-    
+
     // Store elements for later access
     assistantElements = { button, popup };
-    
+
     // Add elements to page
     document.body.appendChild(button);
     document.body.appendChild(popup);
-    
+
     // Setup event handlers
     handleButtonClick(button, popup);
     handleHotButtons(popup);
@@ -603,4 +607,4 @@ function init() {
 }
 
 // Run initialization
-init();
+addFontAwesome();

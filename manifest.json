@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "InsightLens",
+  "name": "Essenca",
   "version": "1.1.0",
-  "description": "A professional AI-powered chatbot that helps you understand any webpage with summaries and insights, featuring a specialized LinkedIn comment generator.",
+  "description": "Essenca is an AI-powered chatbot that helps you understand any webpage with summaries and insights, featuring a specialized LinkedIn comment generator.",
   "permissions": [
     "activeTab",
     "storage",
@@ -17,7 +17,7 @@
   },
   "options_page": "settings/options.html",
   "action": {
-    "default_title": "InsightLens",
+    "default_title": "Essenca",
     "default_popup": "popup.html",
     "default_icon": {
       "48": "icons/icon48.png"

@@ -1,9 +1,9 @@
 <?php
 
-class Hmb_Pa_Gemini_Api {
+class Essenca_Gemini_Api {
 
     public static function make_request($action, $content, $message, $history, $user_profile = null) {
-        $api_key = get_option('hmb_pa_gemini_api_key');
+        $api_key = get_option('essenca_gemini_api_key');
         if (empty($api_key)) {
             throw new Exception('Gemini API key not configured in the plugin settings.');
         }
@@ -60,7 +60,7 @@ class Hmb_Pa_Gemini_Api {
             return trim($body['candidates'][0]['content']['parts'][0]['text']);
         }
 
-        error_log('HMB Page Assistant - Gemini API Error. Code: ' . $response_code . '. Body: ' . $response_body);
+        error_log('Essenca - Gemini API Error. Code: ' . $response_code . '. Body: ' . $response_body);
 
         if (isset($body['error']['message'])) {
             throw new Exception("Gemini API Error: " . $body['error']['message']);
@@ -77,7 +77,7 @@ class Hmb_Pa_Gemini_Api {
     }
 
     public static function test_connection() {
-        $api_key = get_option('hmb_pa_gemini_api_key');
+        $api_key = get_option('essenca_gemini_api_key');
         if (empty($api_key)) {
             throw new Exception('Gemini API key not configured in the plugin settings.');
         }

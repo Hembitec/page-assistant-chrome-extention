@@ -1,12 +1,12 @@
 :root {
-    --primary-color: #f88d13;
-    --primary-hover: #c2ae79;
-    --secondary-color: #f5f5f5;
-    --text-color: #292929;
-    --text-light: #666;
-    --border-color: #e0e0e0;
-    --shadow-light: 0 2px 10px rgba(0, 0, 0, 0.08);
-    --shadow-medium: 0 8px 32px rgba(0, 0, 0, 0.10);
+    --primary-color: #DA7756;
+    --primary-hover: #BD5D3A;
+    --secondary-color: #DDD9C5;
+    --text-color: #3D3929;
+    --text-light: #6D6A58;
+    --border-color: #CBC4A4;
+    --shadow-light: 0 2px 10px rgba(184, 175, 132, 0.08);
+    --shadow-medium: 0 8px 32px rgba(184, 175, 132, 0.10);
     --border-radius: 18px;
     --transition-speed: 0.18s;
 }
@@ -18,14 +18,14 @@ body {
     padding: 0;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     color: var(--text-color);
-    background: linear-gradient(135deg, #f9f9f9 0%, #f5f5f5 100%);
+    background: #F0EEE5;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
 .container {
-    background: #fff;
+    background: #F0EEE5;
     max-width: 500px;
     width: 100%;
     margin: 32px auto;
@@ -86,7 +86,7 @@ textarea {
     font-size: 14px;
     margin-bottom: 0;
     transition: border-color var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
-    background: #fff;
+    background: #F0EEE5;
     box-sizing: border-box;
 }
 
@@ -128,7 +128,7 @@ textarea {
     cursor: pointer;
     transition: border-color var(--transition-speed) ease, background var(--transition-speed) ease;
     font-size: 14px;
-    background: #fff;
+    background: #F0EEE5;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
@@ -136,13 +136,13 @@ textarea {
 
 .model-option.selected {
     border-color: var(--primary-color);
-    background: #fff7ed;
+    background: #DDD9C5;
     font-weight: 600;
 }
 
 .model-option:hover {
     border-color: var(--primary-color);
-    background: #fff3e0;
+    background: #DDD9C5;
 }
 
 .model-name {
@@ -177,7 +177,7 @@ button {
 }
 
 button.secondary {
-    background: #fff;
+    background: #F0EEE5;
     color: var(--primary-color);
     border: 1.5px solid var(--primary-color);
 }
@@ -188,7 +188,7 @@ button:hover {
 }
 
 button.secondary:hover {
-    background: #fff7ed;
+    background: #DDD9C5;
     color: var(--primary-color);
 }
 
@@ -224,7 +224,7 @@ button.secondary:hover {
 }
 
 .modal-content {
-    background-color: #fefefe;
+    background-color: #F0EEE5;
     margin: auto;
     padding: 20px;
     border: 1px solid #888;

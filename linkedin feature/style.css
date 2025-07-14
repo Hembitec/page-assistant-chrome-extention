@@ -6,7 +6,7 @@
     justify-content: center;
     padding: 6px;
     background: transparent;
-    color: #f88d13;
+    color: #DA7756;
     border: none;
     border-radius: 50%;
     cursor: pointer;
@@ -22,14 +22,14 @@
 }
 
 .comment-assistant-icon:hover {
-    background: #c2ae79;
+    background: #BD5D3A;
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(255, 87, 34, 0.1);
+    box-shadow: 0 4px 12px rgba(184, 175, 132, 0.1);
 }
 
 .comment-assistant-icon:active {
     transform: translateY(0);
-    box-shadow: 0 2px 6px rgba(255, 87, 34, 0.3);
+    box-shadow: 0 2px 6px rgba(184, 175, 132, 0.3);
 }
 
 .comment-assistant-icon__content {

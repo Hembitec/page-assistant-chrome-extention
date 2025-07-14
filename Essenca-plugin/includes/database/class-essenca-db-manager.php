@@ -1,10 +1,10 @@
 <?php
 
-class Hmb_Pa_Db_Manager {
+class Essenca_Db_Manager {
 
     public function install() {
         global $wpdb;
-        $table_name = $wpdb->prefix . 'hmb_pa_logs';
+        $table_name = $wpdb->prefix . 'essenca_logs';
         $charset_collate = $wpdb->get_charset_collate();
 
         $sql = "CREATE TABLE $table_name (
@@ -22,14 +22,14 @@ class Hmb_Pa_Db_Manager {
     }
 
     public static function get_token_balance($user_id) {
-        return (int) get_user_meta($user_id, 'hmb_pa_tokens', true);
+        return (int) get_user_meta($user_id, 'essenca_tokens', true);
     }
 
     public static function decrement_token_balance($user_id, $amount = 1) {
         $balance = self::get_token_balance($user_id);
         $amount = (int) $amount;
         if ($balance >= $amount) {
-            update_user_meta($user_id, 'hmb_pa_tokens', $balance - $amount);
+            update_user_meta($user_id, 'essenca_tokens', $balance - $amount);
             return true;
         }
         return false;
@@ -37,7 +37,7 @@ class Hmb_Pa_Db_Manager {
 
     public static function log_transaction($user_id, $action, $tokens_used = 1) {
         global $wpdb;
-        $table_name = $wpdb->prefix . 'hmb_pa_logs';
+        $table_name = $wpdb->prefix . 'essenca_logs';
         
         $balance_to_log = 0;
         if (user_can($user_id, 'manage_options')) {
@@ -59,22 +59,22 @@ class Hmb_Pa_Db_Manager {
     }
 
     public static function allocate_initial_tokens($user_id) {
-        if (get_user_meta($user_id, 'hmb_pa_tokens', true) === '') {
-            $options = get_option('hmb_pa_controls');
+        if (get_user_meta($user_id, 'essenca_tokens', true) === '') {
+            $options = get_option('essenca_controls');
             $initial_tokens = isset($options['initial_tokens']) ? (int) $options['initial_tokens'] : 50;
-            update_user_meta($user_id, 'hmb_pa_tokens', $initial_tokens);
+            update_user_meta($user_id, 'essenca_tokens', $initial_tokens);
         }
     }
 
     public static function set_token_balance($user_id, $amount) {
-        update_user_meta($user_id, 'hmb_pa_tokens', (int) $amount);
+        update_user_meta($user_id, 'essenca_tokens', (int) $amount);
     }
 
     // --- Analytics Methods ---
 
     public static function get_total_tokens_used($start_date = null, $end_date = null) {
         global $wpdb;
-        $table_name = $wpdb->prefix . 'hmb_pa_logs';
+        $table_name = $wpdb->prefix . 'essenca_logs';
         $query = "SELECT SUM(tokens_used) FROM $table_name";
         $where = [];
         if ($start_date) {
@@ -91,7 +91,7 @@ class Hmb_Pa_Db_Manager {
 
     public static function get_usage_by_action($start_date = null, $end_date = null) {
         global $wpdb;
-        $table_name = $wpdb->prefix . 'hmb_pa_logs';
+        $table_name = $wpdb->prefix . 'essenca_logs';
         $query = "SELECT request_action, SUM(tokens_used) as total_tokens, COUNT(id) as total_requests FROM $table_name";
         $where = [];
         if ($start_date) {
@@ -109,7 +109,7 @@ class Hmb_Pa_Db_Manager {
 
     public static function get_top_users($limit = 10, $start_date = null, $end_date = null) {
         global $wpdb;
-        $table_name = $wpdb->prefix . 'hmb_pa_logs';
+        $table_name = $wpdb->prefix . 'essenca_logs';
         $query = "SELECT user_id, SUM(tokens_used) as total_tokens FROM $table_name";
         $where = [];
         if ($start_date) {
@@ -127,7 +127,7 @@ class Hmb_Pa_Db_Manager {
 
     public static function get_daily_usage($start_date, $end_date) {
         global $wpdb;
-        $table_name = $wpdb->prefix . 'hmb_pa_logs';
+        $table_name = $wpdb->prefix . 'essenca_logs';
         
         // Ensure dates are in the correct format
         $start = date('Y-m-d', strtotime($start_date));
@@ -164,4 +164,4 @@ class Hmb_Pa_Db_Manager {
     }
 }
 
-add_action('user_register', array('Hmb_Pa_Db_Manager', 'allocate_initial_tokens'));
+add_action('user_register', array('Essenca_Db_Manager', 'allocate_initial_tokens'));
