@@ -241,7 +241,8 @@ async function makeAIRequest({ content, systemPrompt, history = [], userMessage 
             content,
             user_profile: settings.userProfileInfo || null,
             history: history || [],
-            message: userMessage || ''
+            message: userMessage || '',
+            additional_instructions: settings.systemPrompt || ''
         };
 
         const response = await fetch(url, {

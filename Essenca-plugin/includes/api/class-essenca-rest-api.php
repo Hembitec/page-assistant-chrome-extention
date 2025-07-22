@@ -222,12 +222,15 @@ class Essenca_Rest_Api {
         }
 
         try {
+            $additional_instructions = $request->get_param('additional_instructions');
+
             $result = Essenca_Gemini_Api::make_request(
                 $action,
                 $request->get_param('content'),
                 $request->get_param('message'),
                 $request->get_param('history'),
-                $user_profile
+                $user_profile,
+                wp_kses_post($additional_instructions)
             );
 
             // Only decrement tokens for non-admins after a successful API call

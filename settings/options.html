@@ -18,7 +18,7 @@
             <div class="tab-header">
                 <div class="tab-link active" data-tab="general">General Settings</div>
                 <div class="tab-link" data-tab="personalization">Personalization</div>
-                <div class="tab-link" data-tab="advanced">Advanced Prompts</div>
+                <div class="tab-link" data-tab="advanced">Additional Instructions</div>
             </div>
             <div class="tab-content active" id="general">
                 <div class="form-group">
@@ -133,11 +133,12 @@
             </div>
             <div class="tab-content" id="advanced">
                 <div class="form-group">
-                    <label for="systemPrompt">Custom System Prompt (Optional)</label>
-                    <textarea id="systemPrompt"></textarea>
-                    <div class="hint">Customize how the AI should process and analyze pages. Leave empty to use the
-                        default
-                        prompts.</div>
+                    <label for="systemPrompt">Additional Instructions (Optional)</label>
+                    <textarea id="systemPrompt"
+                        placeholder="e.g., Always respond in a friendly and encouraging tone. When commenting, focus on asking open-ended questions."></textarea>
+                    <div class="hint">Provide additional instructions for the AI. For example, you can specify a tone,
+                        format, or provide examples of how you want the AI to comment. Leave empty to use the defaults.
+                    </div>
                 </div>
             </div>
         </div>

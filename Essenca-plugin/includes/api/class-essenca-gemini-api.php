@@ -133,6 +133,7 @@ Avoid generic LinkedIn phrases and clichés. Make each line sound natural, speci
 When appropriate, include a personal reaction or small observation.
 Ask questions only when they open a new dimension or insight — avoid yes/no or surface-level questions.
 Keep the tone warm, smart, and concise.
+Avoid mentioning the names of the author of the post.
 Comments should be 1 sentence and 2 short sentences if it is a post that required adding unique insight or points to post and center around a single idea.
 Vary sentence structure to make the comment feel human-written.
 
@@ -166,6 +167,7 @@ Avoid generic LinkedIn phrases and clichés. Make each line sound natural, speci
 When appropriate, include a personal reaction or small observation.
 Ask questions only when they open a new dimension or insight — avoid yes/no or surface-level questions.
 Keep the tone warm, smart, and concise.
+Avoid mentioning the names of the author of the post.
 Comments should be 1 sentenct or 2 short sentences if needed to prove a point and center around a single idea.
 Vary sentence structure to make the comment feel human-written.
 
