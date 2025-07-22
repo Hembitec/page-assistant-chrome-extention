@@ -234,7 +234,35 @@ function updateProviderUI(provider) {
 }
 
 providerSelect.addEventListener('change', function () {
-    updateProviderUI(this.value);
+    const newProvider = this.value;
+    updateProviderUI(newProvider);
+
+    // When provider changes, auto-save and set a default model for better UX
+    let defaultModel = '';
+    if (newProvider === 'openai') {
+        defaultModel = 'gpt-3.5-turbo';
+    } else if (newProvider === 'gemini') {
+        defaultModel = 'gemini-2.5-flash'; // A sensible default
+    }
+
+    const settingsToSave = { provider: newProvider };
+
+    if (newProvider !== 'essenca_api') {
+        modelInput.value = defaultModel;
+        updateModelOptionSelection(defaultModel);
+        settingsToSave.model = defaultModel;
+    } else {
+        // For Essenca API, model is not user-configurable, so we can clear it.
+        modelInput.value = '';
+        updateModelOptionSelection('');
+        settingsToSave.model = ''; // Save empty model
+    }
+
+    chrome.storage.sync.set(settingsToSave, () => {
+        if (chrome.runtime.lastError) {
+            console.error(`Error auto-saving provider/model: ${chrome.runtime.lastError.message}`);
+        }
+    });
 });
 
 // --- Auth Modal Logic ---

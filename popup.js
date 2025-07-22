@@ -15,34 +15,53 @@ activateAssistantButton.addEventListener('click', () => {
         if (tabs[0]) {
             // Send a message to the content script to activate the assistant
             chrome.tabs.sendMessage(tabs[0].id, { action: 'activate_assistant' });
-            
+
             // Close the popup
             window.close();
         }
     });
 });
 
-// Check if API key is configured
-chrome.storage.sync.get(['provider', 'openaiApiKey', 'geminiApiKey', 'model'], (result) => {
-    let provider = result.provider || 'openai';
-    let apiKeyConfigured = false;
-    if (provider === 'openai') {
-        apiKeyConfigured = !!result.openaiApiKey;
-    } else if (provider === 'gemini') {
-        apiKeyConfigured = !!result.geminiApiKey;
-    }
-    if (!apiKeyConfigured) {
-        statusDiv.innerHTML = `
-            <span class="status-icon"><i class="fas fa-exclamation-triangle"></i></span>
-            ${provider === 'openai' ? 'OpenAI' : 'Gemini'} API key not configured
-        `;
-        statusDiv.classList.add('not-configured');
-    } else {
-        let modelText = result.model ? `Using: ${provider} / ${result.model}` : 'Model not selected';
-        statusDiv.innerHTML = `
-            <span class="status-icon configured"><i class="fas fa-check-circle"></i></span>
-            <span class="status-text-main">Ready to analyze pages</span>
-            <span class="status-text-secondary">${modelText}</span>
-        `;
-    }
+// Check API configuration status
+chrome.storage.sync.get(['provider', 'openaiApiKey', 'geminiApiKey', 'model'], (syncResult) => {
+    chrome.storage.local.get(['jwtToken'], (localResult) => {
+        const provider = syncResult.provider || 'essenca_api';
+        let isConfigured = false;
+        let message = '';
+
+        switch (provider) {
+            case 'essenca_api':
+                isConfigured = !!localResult.jwtToken;
+                message = 'Essenca API not configured. Please log in.';
+                break;
+            case 'openai':
+                isConfigured = !!syncResult.openaiApiKey;
+                message = 'OpenAI API key not configured.';
+                break;
+            case 'gemini':
+                isConfigured = !!syncResult.geminiApiKey;
+                message = 'Gemini API key not configured.';
+                break;
+        }
+
+        if (!isConfigured) {
+            statusDiv.innerHTML = `
+                <span class="status-icon"><i class="fas fa-exclamation-triangle"></i></span>
+                ${message}
+            `;
+            statusDiv.classList.add('not-configured');
+        } else {
+            let modelText = '';
+            if (provider === 'essenca_api') {
+                modelText = 'Using: Essenca API';
+            } else {
+                modelText = syncResult.model ? `Using: ${provider} / ${syncResult.model}` : 'Model not selected';
+            }
+            statusDiv.innerHTML = `
+                <span class="status-icon configured"><i class="fas fa-check-circle"></i></span>
+                <span class="status-text-main">Ready to analyze pages</span>
+                <span class="status-text-secondary">${modelText}</span>
+            `;
+        }
+    });
 });
