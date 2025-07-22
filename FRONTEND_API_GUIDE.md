@@ -214,3 +214,60 @@ Authentication is handled using JSON Web Tokens (JWT). The flow is as follows:
 *   **Error Handling**: The API will return appropriate HTTP status codes (e.g., 401 for unauthorized, 400 for bad requests) and a JSON body with an error `message`. The frontend should be prepared to handle these errors gracefully.
 *   **Token Expiration**: JWTs have an expiration date. If the API returns a 403 `invalid_token` error, the user should be prompted to log in again.
 *   **CORS**: Ensure that your WordPress site is configured to accept requests from your Next.js application's domain. You may need to add a CORS (Cross-Origin Resource Sharing) plugin or configure your server if you encounter issues.
+
+---
+
+## 6. Account Management Endpoints
+
+### 1. Change Password
+
+*   **Endpoint**: `/user/change-password`
+*   **Method**: `POST`
+*   **Authentication**: Required (Bearer Token)
+*   **Description**: Allows a logged-in user to change their password.
+*   **Body (JSON)**:
+    ```json
+    {
+      "current_password": "their-current-password",
+      "new_password": "their-new-strong-password"
+    }
+    ```
+*   **Success Response (200 OK)**:
+    ```json
+    {
+      "success": true,
+      "message": "Password changed successfully."
+    }
+    ```
+*   **Error Response (403 Forbidden)**:
+    ```json
+    {
+      "code": "wrong_password",
+      "message": "The current password you entered is incorrect.",
+      "data": { "status": 403 }
+    }
+    ```
+
+### 2. Change Username
+
+*   **Endpoint**: `/user/change-username`
+*   **Method**: `POST`
+*   **Authentication**: Required (Bearer Token)
+*   **Description**: Allows a logged-in user to change their username. Requires the user to confirm their password.
+*   **Body (JSON)**:
+    ```json
+    {
+      "password": "their-current-password",
+      "new_username": "their-new-username"
+    }
+    ```
+*   **Success Response (200 OK)**:
+    ```json
+    {
+      "success": true,
+      "message": "Username changed successfully."
+    }
+    ```
+*   **Error Responses**:
+    *   `403 Forbidden` (`wrong_password`): If the provided password is incorrect.
+    *   `409 Conflict` (`username_exists`): If the new username is already taken.

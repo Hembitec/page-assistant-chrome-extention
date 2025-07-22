@@ -58,11 +58,18 @@ class Essenca_Db_Manager {
         );
     }
 
-    public static function allocate_initial_tokens($user_id) {
+    public static function handle_new_user_registration($user_id) {
+        // Allocate initial tokens
         if (get_user_meta($user_id, 'essenca_tokens', true) === '') {
             $options = get_option('essenca_controls');
             $initial_tokens = isset($options['initial_tokens']) ? (int) $options['initial_tokens'] : 50;
             update_user_meta($user_id, 'essenca_tokens', $initial_tokens);
+        }
+
+        // Generate and assign Essenca ID
+        if (!get_user_meta($user_id, 'essenca_id', true)) {
+            $essenca_id = 'Esn_' . substr(md5(uniqid(mt_rand(), true)), 0, 8);
+            update_user_meta($user_id, 'essenca_id', $essenca_id);
         }
     }
 
@@ -164,4 +171,4 @@ class Essenca_Db_Manager {
     }
 }
 
-add_action('user_register', array('Essenca_Db_Manager', 'allocate_initial_tokens'));
+add_action('user_register', array('Essenca_Db_Manager', 'handle_new_user_registration'));

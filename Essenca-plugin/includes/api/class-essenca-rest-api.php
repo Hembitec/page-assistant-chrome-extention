@@ -45,6 +45,19 @@ class Essenca_Rest_Api {
             'callback' => array($this, 'get_current_user_activity'),
             'permission_callback' => array($this, 'check_permission')
         ]);
+
+        // --- Account Management Endpoints ---
+        register_rest_route('essenca/v1', '/user/change-password', [
+            'methods' => 'POST',
+            'callback' => array($this, 'change_user_password'),
+            'permission_callback' => array($this, 'check_permission')
+        ]);
+
+        register_rest_route('essenca/v1', '/user/change-username', [
+            'methods' => 'POST',
+            'callback' => array($this, 'change_username'),
+            'permission_callback' => array($this, 'check_permission')
+        ]);
     }
 
     public function get_current_user_data($request) {
@@ -58,7 +71,7 @@ class Essenca_Rest_Api {
         $balance = user_can($user_id, 'manage_options') ? 'Unlimited' : Essenca_Db_Manager::get_token_balance($user_id);
 
         $response_data = [
-            'id' => $user->ID,
+            'id' => get_user_meta($user_id, 'essenca_id', true),
             'username' => $user->user_login,
             'email' => $user->user_email,
             'token_balance' => $balance,
@@ -78,6 +91,53 @@ class Essenca_Rest_Api {
         ), ARRAY_A);
 
         return new WP_REST_Response($logs, 200);
+    }
+
+    public function change_user_password($request) {
+        $user_id = $request->get_param('user_id');
+        $user = get_userdata($user_id);
+        
+        $current_password = $request->get_param('current_password');
+        $new_password = $request->get_param('new_password');
+
+        if (empty($current_password) || empty($new_password)) {
+            return new WP_Error('missing_fields', 'Current and new passwords are required.', ['status' => 400]);
+        }
+
+        if (!wp_check_password($current_password, $user->user_pass, $user_id)) {
+            return new WP_Error('wrong_password', 'The current password you entered is incorrect.', ['status' => 403]);
+        }
+
+        wp_set_password($new_password, $user_id);
+        return new WP_REST_Response(['success' => true, 'message' => 'Password changed successfully.'], 200);
+    }
+
+    public function change_username($request) {
+        $user_id = $request->get_param('user_id');
+        $user = get_userdata($user_id);
+
+        $password = $request->get_param('password');
+        $new_username = $request->get_param('new_username');
+
+        if (empty($password) || empty($new_username)) {
+            return new WP_Error('missing_fields', 'Password and new username are required.', ['status' => 400]);
+        }
+
+        if (!wp_check_password($password, $user->user_pass, $user_id)) {
+            return new WP_Error('wrong_password', 'The password you entered is incorrect.', ['status' => 403]);
+        }
+
+        if (username_exists($new_username)) {
+            return new WP_Error('username_exists', 'That username is already taken.', ['status' => 409]);
+        }
+
+        $result = wp_update_user(['ID' => $user_id, 'user_login' => $new_username]);
+
+        if (is_wp_error($result)) {
+            return $result;
+        }
+
+        return new WP_REST_Response(['success' => true, 'message' => 'Username changed successfully.'], 200);
     }
 
     public function register_user($request) {

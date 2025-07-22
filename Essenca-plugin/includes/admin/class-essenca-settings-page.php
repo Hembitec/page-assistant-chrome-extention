@@ -99,6 +99,16 @@ class Essenca_Settings_Page {
                         <td>GET</td>
                         <td>Retrieves the last 50 activity logs for the authenticated user. Requires a valid JWT.</td>
                     </tr>
+                    <tr>
+                        <td><code>/user/change-password</code></td>
+                        <td>POST</td>
+                        <td>Allows a logged-in user to change their password. Requires <code>current_password</code> and <code>new_password</code>.</td>
+                    </tr>
+                    <tr>
+                        <td><code>/user/change-username</code></td>
+                        <td>POST</td>
+                        <td>Allows a logged-in user to change their username. Requires <code>password</code> and <code>new_username</code>.</td>
+                    </tr>
                 </tbody>
             </table>
         </div>

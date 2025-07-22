@@ -22,9 +22,9 @@
 }
 
 .comment-assistant-icon:hover {
-    background: #BD5D3A;
+    background: rgba(189, 93, 58, 0.2);
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(184, 175, 132, 0.1);
+    box-shadow: none;
 }
 
 .comment-assistant-icon:active {
@@ -68,7 +68,16 @@
 }
 
 .comment-assistant-icon__spinner {
+    display: none;
     animation: spin 1s linear infinite;
+}
+
+.comment-assistant-icon--loading .comment-assistant-icon__icon {
+    display: none;
+}
+
+.comment-assistant-icon--loading .comment-assistant-icon__spinner {
+    display: block;
 }
 
 @keyframes spin {

@@ -83,12 +83,12 @@ class Essenca_Admin_Menu {
             <table class="wp-list-table widefat fixed striped">
                 <thead>
                     <tr>
-                        <th style="width: 5%;">User ID</th>
-                        <th style="width: 20%;">Username</th>
+                        <th style="width: 15%;">Essenca ID</th>
+                        <th style="width: 15%;">Username</th>
                         <th style="width: 25%;">Email</th>
                         <th style="width: 15%;">Registration Date</th>
-                        <th style="width: 15%;">Token Balance</th>
-                        <th style="width: 20%;">Actions</th>
+                        <th style="width: 10%;">Token Balance</th>
+                        <th style="width: 10%;">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -96,8 +96,9 @@ class Essenca_Admin_Menu {
                     $users = get_users(['orderby' => 'ID']);
                     foreach ($users as $user) {
                         $token_balance = get_user_meta($user->ID, 'essenca_tokens', true);
+                        $essenca_id = get_user_meta($user->ID, 'essenca_id', true);
                         echo '<tr>';
-                        echo '<td>' . esc_html($user->ID) . '</td>';
+                        echo '<td>' . esc_html($essenca_id) . '</td>';
                         echo '<td>' . esc_html($user->user_login) . '</td>';
                         echo '<td>' . esc_html($user->user_email) . '</td>';
                         echo '<td>' . date('Y-m-d', strtotime($user->user_registered)) . '</td>';

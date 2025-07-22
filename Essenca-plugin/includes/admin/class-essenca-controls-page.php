@@ -13,6 +13,15 @@ class Essenca_Controls_Page {
                 submit_button();
                 ?>
             </form>
+
+            <hr>
+
+            <h2>User ID Migration</h2>
+            <p>Assign a unique "Esn" ID to all existing users who do not have one.</p>
+            <form method="post">
+                <input type="hidden" name="essenca_migrate_user_ids" value="1">
+                <?php submit_button('Assign IDs to Existing Users', 'secondary', 'essenca_migrate_ids_submit'); ?>
+            </form>
         </div>
         <?php
     }
@@ -77,6 +86,27 @@ class Essenca_Controls_Page {
         $value = isset($options['initial_tokens']) ? $options['initial_tokens'] : 50;
         echo "<input type='number' name='essenca_controls[initial_tokens]' value='" . esc_attr($value) . "' min='0' />";
     }
+
+    public static function handle_migration() {
+        if (isset($_POST['essenca_migrate_user_ids']) && $_POST['essenca_migrate_user_ids'] == '1') {
+            $users = get_users(['meta_query' => [
+                [
+                    'key' => 'essenca_id',
+                    'compare' => 'NOT EXISTS'
+                ]
+            ]]);
+
+            foreach ($users as $user) {
+                $essenca_id = 'Esn_' . substr(md5(uniqid(mt_rand(), true)), 0, 8);
+                update_user_meta($user->ID, 'essenca_id', $essenca_id);
+            }
+
+            add_action('admin_notices', function() {
+                echo '<div class="notice notice-success is-dismissible"><p>Essenca IDs have been assigned to all existing users.</p></div>';
+            });
+        }
+    }
 }
 
 add_action('admin_init', array('Essenca_Controls_Page', 'register_settings'));
+add_action('admin_init', array('Essenca_Controls_Page', 'handle_migration'));
