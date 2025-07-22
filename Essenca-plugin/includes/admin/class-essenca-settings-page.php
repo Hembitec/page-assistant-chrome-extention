@@ -7,11 +7,13 @@ class Essenca_Settings_Page {
             check_admin_referer('essenca_save_settings_nonce');
             update_option('essenca_jwt_secret_key', sanitize_text_field($_POST['essenca_jwt_secret_key']));
             update_option('essenca_gemini_api_key', sanitize_text_field($_POST['essenca_gemini_api_key']));
+            update_option('essenca_gemini_model', sanitize_text_field($_POST['essenca_gemini_model']));
             echo '<div class="notice notice-success"><p>Settings saved!</p></div>';
         }
 
         $jwt_key = get_option('essenca_jwt_secret_key', '');
         $gemini_key = get_option('essenca_gemini_api_key', '');
+        $gemini_model = get_option('essenca_gemini_model', 'gemini-2.5-flash');
         ?>
         <div class="wrap">
             <h1>API Settings</h1>
@@ -33,6 +35,21 @@ class Essenca_Settings_Page {
                         </td>
                     </tr>
                 </table>
+                <tr valign="top">
+                        <th scope="row"><label for="essenca_gemini_model">Gemini Model</label></th>
+                        <td>
+                            <select id="essenca_gemini_model" name="essenca_gemini_model">
+                                <option value="gemini-2.5-flash" <?php selected($gemini_model, 'gemini-2.5-flash'); ?>>Gemini 2.5 Flash (Default)</option>
+                                <option value="gemini-1.5-flash" <?php selected($gemini_model, 'gemini-1.5-flash'); ?>>Gemini 1.5 Flash</option>
+                                <option value="gemini-1.5-pro" <?php selected($gemini_model, 'gemini-1.5-pro'); ?>>Gemini 1.5 Pro</option>
+                                <option value="gemini-2.0" <?php selected($gemini_model, 'gemini-2.0'); ?>>Gemini 2.0</option>
+                                <option value="gemini-2.5-pro" <?php selected($gemini_model, 'gemini-2.5-pro'); ?>>Gemini 2.5 Pro</option>
+                                <option value="gemini-2.0-flash" <?php selected($gemini_model, 'gemini-2.0-flash'); ?>>Gemini 2.0 Flash</option>
+                                <option value="gemini-2.0-flash-lite" <?php selected($gemini_model, 'gemini-2.0-flash-lite'); ?>>Gemini 2.0 Flash Lite</option>
+                            </select>
+                            <p class="description">Select the Gemini model to use for AI requests. Flash is faster and more cost-effective, while Pro is more powerful.</p>
+                        </td>
+                    </tr>
                 <?php submit_button('Save Settings', 'primary', 'essenca_save_settings'); ?>
             </form>
 

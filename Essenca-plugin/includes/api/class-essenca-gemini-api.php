@@ -9,7 +9,8 @@ class Essenca_Gemini_Api {
         }
 
         $full_prompts = self::get_prompts();
-        $url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' . $api_key;
+        $model = get_option('essenca_gemini_model', 'gemini-2.5-flash');
+        $url = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key=" . $api_key;
         $body_data = [];
 
         if ($action === 'generate_linkedin_comment') {
@@ -82,7 +83,8 @@ class Essenca_Gemini_Api {
             throw new Exception('Gemini API key not configured in the plugin settings.');
         }
 
-        $url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' . $api_key;
+        $model = get_option('essenca_gemini_model', 'gemini-2.5-flash');
+        $url = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key=" . $api_key;
         $body_data = ['contents' => [['parts' => [['text' => 'This is a test.']]]]];
         
         $response = wp_remote_post($url, [
@@ -130,7 +132,7 @@ ADDITIONAL RULES FOR COMMENT QUALITY
 Avoid generic LinkedIn phrases and clichés. Make each line sound natural, specific, and personal.
 When appropriate, include a personal reaction or small observation.
 Ask questions only when they open a new dimension or insight — avoid yes/no or surface-level questions.
-Keep the tone curious, warm, smart, and concise.
+Keep the tone warm, smart, and concise.
 Comments should be 1 sentence and 2 short sentences if it is a post that required adding unique insight or points to post and center around a single idea.
 Vary sentence structure to make the comment feel human-written.
 
@@ -147,7 +149,7 @@ Use Tone That Matches the Post
 The tone should adapt based on the post type:
 Professional posts → clear, sharp, respectful
 Personal posts → warm, thoughtful, validating
-Thought-leadership posts → insightful, curious, sometimes challenging
+Thought-leadership posts → insightful, sometimes challenging
 Avoid being overly chatty or robotic — keep the tone flexible, human, and context-aware.
 ',
             'generate_linkedin_comment_generic' => 'You are a professional social media manager helping a user write a comment on a LinkedIn post.
@@ -163,7 +165,7 @@ ADDITIONAL RULES FOR COMMENT QUALITY
 Avoid generic LinkedIn phrases and clichés. Make each line sound natural, specific, and personal.
 When appropriate, include a personal reaction or small observation.
 Ask questions only when they open a new dimension or insight — avoid yes/no or surface-level questions.
-Keep the tone curious, warm, smart, and concise.
+Keep the tone warm, smart, and concise.
 Comments should be 1 sentenct or 2 short sentences if needed to prove a point and center around a single idea.
 Vary sentence structure to make the comment feel human-written.
 
@@ -183,7 +185,7 @@ Professional posts → clear, sharp, respectful
 
 Personal posts → warm, thoughtful, validating
 
-Thought-leadership posts → insightful, curious, sometimes challenging
+Thought-leadership posts → insightful, sometimes challenging
 Avoid being overly chatty or robotic — keep the tone flexible, human, and context-aware.
 '
         ];

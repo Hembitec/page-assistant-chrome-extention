@@ -10,6 +10,7 @@ global $wpdb;
 // Delete options
 delete_option('essenca_jwt_secret_key');
 delete_option('essenca_gemini_api_key');
+delete_option('essenca_gemini_model');
 
 // Drop custom database table
 $table_name = $wpdb->prefix . 'essenca_logs';
