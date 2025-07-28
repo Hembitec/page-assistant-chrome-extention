@@ -2,7 +2,7 @@
 
 class Essenca_Gemini_Api {
 
-    public static function make_request($action, $content, $message, $history, $user_profile = null) {
+    public static function make_request($action, $content, $message, $history, $user_profile = null, $additional_instructions = '') {
         $api_key = get_option('essenca_gemini_api_key');
         if (empty($api_key)) {
             throw new Exception('Gemini API key not configured in the plugin settings.');
@@ -13,9 +13,13 @@ class Essenca_Gemini_Api {
         $url = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key=" . $api_key;
         $body_data = [];
 
+        // Append additional instructions if they exist
+        $instructions_to_add = !empty($additional_instructions) ? "\n\nADDITIONAL INSTRUCTIONS:\n" . $additional_instructions : '';
+
         if ($action === 'generate_linkedin_comment') {
             // Use the structured format for LinkedIn comments for better reliability
             $system_prompt_text = !empty($user_profile) ? $full_prompts['generate_linkedin_comment'] : $full_prompts['generate_linkedin_comment_generic'];
+            $system_prompt_text .= $instructions_to_add;
             $user_content_text = !empty($user_profile) ? "USER PROFILE:\n" . $user_profile . "\n\nPOST CONTENT:\n" . $content : "POST CONTENT:\n" . $content;
 
             $body_data = [
@@ -30,6 +34,8 @@ class Essenca_Gemini_Api {
                 throw new Exception('Invalid action specified.');
             }
             
+            $system_prompt .= $instructions_to_add;
+
             $prompt_body = "Page content:\n" . $content;
             if (!empty($message)) {
                 $prompt_body .= "\n\nUser question: " . $message;

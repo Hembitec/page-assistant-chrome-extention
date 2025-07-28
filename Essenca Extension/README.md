@@ -1,4 +1,4 @@
-# InsightLens Chrome Extension
+# Essenca Chrome Extension
 
 A professional AI-powered chatbot that helps you understand any webpage with summaries, key insights, and a specialized LinkedIn comment generation feature.
 

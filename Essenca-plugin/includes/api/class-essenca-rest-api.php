@@ -230,7 +230,7 @@ class Essenca_Rest_Api {
                 $request->get_param('message'),
                 $request->get_param('history'),
                 $user_profile,
-                wp_kses_post($additional_instructions)
+                $additional_instructions
             );
 
             // Only decrement tokens for non-admins after a successful API call
